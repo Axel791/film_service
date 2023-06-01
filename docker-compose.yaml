@@ -1,0 +1,93 @@
+version: '3.8'
+
+
+x-function: &python
+  volumes:
+    - ./app:/app:rw
+    - poetry-volume:/opt/poetry:delegated
+  user: "${USER_ID}"
+  environment: &env-vars
+    POETRY_HOME: /opt/poetry
+  networks:
+    - internal
+  env_file:
+    .env
+
+
+
+services:
+
+  nginx:
+    build: ./nginx
+    container_name: ${PROJECT_SLUG}_nginx
+    volumes:
+      - static_dir:/opt/admin/static/
+      - media_dir:/opt/admin/media/
+    ports:
+      - "80:80"
+      - "81:81"
+    depends_on:
+      - api
+      - admin
+    networks:
+      - internal
+
+  db:
+    image: postgres:latest
+    container_name: ${PROJECT_SLUG}_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - internal
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: admin.dockerfile
+    container_name: ${PROJECT_SLUG}_admin
+    working_dir: /opt/admin
+    volumes:
+      - static_dir:/opt/admin/static/
+      - media_dir:/opt/admin/media/
+      - .:/admin
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - internal
+
+  api:
+    <<: *python
+    container_name: ${PROJECT_SLUG}_api
+    build:
+      context: ./app
+      dockerfile: backend.dockerfile
+    env_file:
+      - .env
+    expose:
+      - 80
+    restart: always
+    networks:
+      - internal
+
+  redis:
+    image: redis:6.2.6
+    networks:
+      - internal
+
+volumes:
+  static_dir:
+  media_dir:
+  pgdata:
+  poetry-volume:
+
+
+networks:
+  internal:

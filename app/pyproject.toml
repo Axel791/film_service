@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = ["Axel791 <HS.Kazakov@mail.ru>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.95.2"
+pydantic = "^1.10.8"
+elasticsearch = "^8.8.0"
+uvicorn = "^0.22.0"
+redis = "^4.5.5"
+aioredis = "^2.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

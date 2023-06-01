@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "movies-api"
+version = "0.1.0"
+description = "api for movies"
+authors = ["Axel791 <HS.Kazakov@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^4.1.7"
+flake8 = "^6.0.0"
+python-dotenv = "^1.0.0"
+django-split-settings = "^1.2.0"
+psycopg2-binary = "^2.9.5"
+django-debug-toolbar = "^3.8.1"
+uwsgi = "^2.0.21"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
