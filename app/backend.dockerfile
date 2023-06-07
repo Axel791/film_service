@@ -13,6 +13,8 @@ RUN pip install --upgrade pip && \
     poetry install --no-root --no-dev
 
 COPY . .
-ENV PYTHONPATH=.
+
+ENV APP_MODULE="app.main:app"
+ENV PYTHONPATH=/opt/app
 
 CMD ["/start-reload.sh"]

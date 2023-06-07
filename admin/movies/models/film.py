@@ -7,11 +7,15 @@ from django.utils.translation import gettext_lazy as _
 class FilmWork(UUIDMixin, TimeStampedMixin):
 
     class FilmType(models.TextChoices):
-        TV_SHOW = "TV", _("TV Show")
-        FILM = "FM", _("FIlm")
+        TV_SHOW = "TV", _("tv_show")
+        FILM = "MV", _("movie")
 
-    tittle = models.CharField(verbose_name=_('title'), max_length=250)
+    title = models.CharField(verbose_name=_('title'), max_length=250)
     description = models.TextField(verbose_name=_('description'), blank=True)
+    creation_date = models.DateTimeField(
+        verbose_name=_('creation date'),
+        blank=True
+    )
     rating = models.FloatField(
         verbose_name=_('rating'),
         blank=True,
@@ -38,7 +42,7 @@ class FilmWork(UUIDMixin, TimeStampedMixin):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=['tittle'],
+                fields=['title'],
                 name="film_title_index"
             )
         ]
