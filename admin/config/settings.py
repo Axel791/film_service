@@ -17,6 +17,8 @@ DEBUG = os.environ.get("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = ['http://localhost:81']
+CSRF_COOKIE_DOMAIN = ".localhost"
 
 # Application definition
 include(

@@ -1,20 +1,6 @@
 version: '3.8'
 
 
-x-function: &python
-  volumes:
-    - ./app:/app:rw
-    - poetry-volume:/opt/poetry:delegated
-  user: "${USER_ID}"
-  environment: &env-vars
-    POETRY_HOME: /opt/poetry
-  networks:
-    - internal
-  env_file:
-    .env
-
-
-
 services:
 
   nginx:
@@ -37,6 +23,7 @@ services:
     container_name: ${PROJECT_SLUG}_db
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./etl/db_backup/movies_db.sql:/docker-entrypoint-initdb.d/dump.sql
     env_file:
       - .env
     environment:
@@ -55,7 +42,7 @@ services:
     volumes:
       - static_dir:/opt/admin/static/
       - media_dir:/opt/admin/media/
-      - .:/admin
+      - ./admin:/opt/admin:rw
     env_file:
       - .env
     depends_on:
@@ -64,7 +51,6 @@ services:
       - internal
 
   api:
-    <<: *python
     container_name: ${PROJECT_SLUG}_api
     build:
       context: ./app
@@ -73,6 +59,8 @@ services:
       - .env
     expose:
       - 80
+    volumes:
+      - ./app:/opt/app:rw
     restart: always
     networks:
       - internal
@@ -82,11 +70,40 @@ services:
     networks:
       - internal
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      internal:
+        aliases:
+          - elasticsearch
+
+  app:
+    build:
+      context: ./etl
+      dockerfile: etl.dockerfile
+    depends_on:
+      - db
+      - elasticsearch
+#    volumes:
+#      - ./etl:/opt/etl:rw
+    env_file:
+      - .env
+    networks:
+      - internal
+
 volumes:
   static_dir:
   media_dir:
   pgdata:
-  poetry-volume:
+  elasticsearch_data:
 
 
 networks:

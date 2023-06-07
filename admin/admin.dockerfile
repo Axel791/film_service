@@ -7,17 +7,17 @@ ENV UWSGI_THREADS 8
 ENV UWSGI_HARAKIRI 60
 ENV DJANGO_SETTINGS_MODULE 'config.settings'
 
-WORKDIR /opt/admin
+WORKDIR /opt/admin_init
 
 COPY pyproject.toml pyproject.toml
-RUN mkdir -p /opt/admin/static/ && \
-    mkdir -p /opt/admin/media/  &&  \
+RUN mkdir -p /opt/admin_init/static/ && \
+    mkdir -p /opt/admin_init/media/  &&  \
     pip install --upgrade pip && \
     pip install poetry && \
     poetry config virtualenvs.create false && \
     poetry install --no-root --no-dev
 
-COPY uwsgi/uwsgi.ini uwsgi.ini
+COPY uwsgi/uwsgi.ini uwsgi/uwsgi.ini
 COPY . .
 
 EXPOSE 8000

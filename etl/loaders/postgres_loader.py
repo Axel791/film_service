@@ -111,7 +111,3 @@ class PostgresLoader:
             genres.append(genre)
 
         return genres
-
-
-
-

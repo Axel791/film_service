@@ -3,7 +3,7 @@ FROM python:3.10
 RUN pip install --upgrade pip
 RUN pip install poetry
 
-WORKDIR /app
+WORKDIR /opt/etl
 
 COPY pyproject.toml poetry.lock ./
 

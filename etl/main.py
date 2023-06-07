@@ -27,6 +27,7 @@ es = Elasticsearch(
 )
 
 if __name__ == "__main__":
+    time.sleep(60)
     warnings.simplefilter("ignore", category=ElasticsearchWarning)
 
     etl_loader = ElasticsearchLoader(es=es)
