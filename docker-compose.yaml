@@ -92,8 +92,8 @@ services:
     depends_on:
       - db
       - elasticsearch
-#    volumes:
-#      - ./etl:/opt/etl:rw
+    volumes:
+      - ./etl:/opt/etl:rw
     env_file:
       - .env
     networks:
