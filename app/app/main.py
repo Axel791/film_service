@@ -17,7 +17,7 @@ from app.exceptions.base import BaseNotFound
 def create_app():
     fastapi_app = FastAPI(
         title=settings.PROJECT_SLUG,
-        openapi_url=f"{settings.API_V1_STR}/openai.json"
+        openapi_url=f"{settings.API_V1_STR}/openapi.json"
     )
 
     fastapi_app.add_middleware(
@@ -55,3 +55,4 @@ async def shutdown():
 @app.exception_handler(BaseNotFound)
 async def custom_http_exception_handler(request, exc):
     return Response(status_code=404, content="Not found")
+

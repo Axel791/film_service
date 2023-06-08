@@ -37,15 +37,16 @@ if __name__ == "__main__":
     connection = connect_to_db()
     try:
         with db_session(connection=connection) as cur:
-            last_position_films = state.get_state("last_position_films") or 0
-            last_position_persons = state.get_state("last_position_persons") or 0
-            last_position_genres = state.get_state("last_position_genres") or 0
+            # last_position_films = state.get_state("last_position_films") or 0
+            # last_position_persons = state.get_state("last_position_persons") or 0
+            # last_position_genres = state.get_state("last_position_genres") or 0
+            # logger.info(f"{last_position_genres}, {last_position_films}, {last_position_persons}")
             while True:
                 pg_loader = PostgresLoader(cursor=cur)
 
                 # loading movies index
                 film_works = pg_loader.get_film_works_all()
-                for film_i, film_work in enumerate(film_works[last_position_films:], start=last_position_films):
+                for film_i, film_work in enumerate(film_works):
                     all_genres = pg_loader.get_genres_by_fw_id(film_work.id)
                     film_work.genres = [genre.name for genre in all_genres]
 
@@ -85,7 +86,8 @@ if __name__ == "__main__":
 
                 # loading persons index
                 persons = pg_loader.get_persons_all()
-                for person_i, person in enumerate(persons[last_position_persons:], start=last_position_persons):
+                logger.info("persons are loading")
+                for person_i, person in enumerate(persons):
                     all_film_works = pg_loader.get_film_works_by_p_id(person.id)
                     person.films = [
                         {
@@ -101,15 +103,17 @@ if __name__ == "__main__":
                 #load data to elastic
                 try:
                     etl_loader.bulk_load_film_works(film_works=film_works)
+                    logger.info(f"Загрузка индекса movies - успешно загружено {film_i} фильмов")
                     etl_loader.bulk_load_persons(persons=persons)
+                    logger.info(f"Загрузка индекса persons - успешно загружено {person_i} персон")
                     etl_loader.bulk_load_genres(genres=genres)
-                    state.set_state("last_position_movies", film_i + 1)
-                    state.set_state("last_position_persons", person_i + 1)
-                    state.set_state("last_position_genres", len(genres) + 1)
+                    logger.info(f"Загрузка индекса genres - успешно загружено {len(genres)} жанров")
+                    # state.set_state("last_position_movies", film_i + 1)
+                    # state.set_state("last_position_persons", person_i + 1)
+                    # state.set_state("last_position_genres", len(genres) + 1)
                 except Exception as _exc:
                     logger.error(f"Ошибка загрузки данных на: {film_i}: {_exc}")
                     break
-                time.sleep(60)
     except Exception as _exc:
         logger.error(f"ERROR: {_exc}")
     finally:
