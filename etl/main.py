@@ -81,7 +81,6 @@ if __name__ == "__main__":
                         } for person in all_persons
                         if person.role == 'writer'
                     ]
-
                 # loading persons index
                 persons = pg_loader.get_persons_all()
                 for person_i, person in enumerate(persons[last_position_persons:], start=last_position_persons):
@@ -93,11 +92,8 @@ if __name__ == "__main__":
                             "roles": film_work.role
                         } for film_work in all_film_works
                     ]
-
                 # loading genres index
                 genres = pg_loader.get_genres_all()
-
-                #load data to elastic
                 try:
                     etl_loader.bulk_load_film_works(film_works=film_works)
                     etl_loader.bulk_load_persons(persons=persons)
