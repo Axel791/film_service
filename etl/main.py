@@ -27,6 +27,7 @@ es = Elasticsearch(
 )
 
 if __name__ == "__main__":
+    time.sleep(60)
     warnings.simplefilter("ignore", category=ElasticsearchWarning)
 
     etl_loader = ElasticsearchLoader(es=es)
@@ -81,6 +82,7 @@ if __name__ == "__main__":
                         } for person in all_persons
                         if person.role == 'writer'
                     ]
+
                 # loading persons index
                 persons = pg_loader.get_persons_all()
                 for person_i, person in enumerate(persons[last_position_persons:], start=last_position_persons):
@@ -92,12 +94,18 @@ if __name__ == "__main__":
                             "roles": film_work.role
                         } for film_work in all_film_works
                     ]
+
                 # loading genres index
                 genres = pg_loader.get_genres_all()
+
+                #load data to elastic
                 try:
                     etl_loader.bulk_load_film_works(film_works=film_works)
+                    logger.info(f"Загрузка индекса movies - успешно загружено {film_i} фильмов")
                     etl_loader.bulk_load_persons(persons=persons)
+                    logger.info(f"Загрузка индекса persons - успешно загружено {person_i} персон")
                     etl_loader.bulk_load_genres(genres=genres)
+                    logger.info(f"Загрузка индекса genres - успешно загружено {len(genres)} жанров")
                     state.set_state("last_position_movies", film_i + 1)
                     state.set_state("last_position_persons", person_i + 1)
                     state.set_state("last_position_genres", len(genres) + 1)

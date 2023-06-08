@@ -58,7 +58,6 @@ class ElasticsearchLoader:
                     "films": person.films
                 }
             }
-            print(doc)
             actions.append(doc)
         helpers.bulk(self._es, actions)
 
@@ -74,7 +73,6 @@ class ElasticsearchLoader:
                     "description": genre.description
                 }
             }
-            print(doc)
             actions.append(doc)
         helpers.bulk(self._es, actions)
 
