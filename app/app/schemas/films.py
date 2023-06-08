@@ -11,12 +11,12 @@ class FilmWork(BaseModel):
     title: str
     description: Optional[str]
     imdb_rating: Optional[float]
-    genre: List[dict]
-    director: List[str]
-    actors_names: List[str]
-    writers_names: List[str]
-    actors: Optional[List[dict]]
-    writers: Optional[List[dict]]
+    genre: Optional[list]
+    director: str
+    actors_names: str
+    writers_names: str
+    actors: Optional[list]
+    writers: Optional[list]
 
     class Config:
         json_loads = orjson.loads

@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from redis.asyncio import Redis
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import AsyncElasticsearch, Elasticsearch
 
 from app.api.v1 import api
 
@@ -10,6 +10,8 @@ from app.core.config import settings
 
 from app.db import init_etl
 from app.db import init_redis
+
+from app.exceptions.base import BaseNotFound
 
 
 def create_app():
@@ -40,7 +42,7 @@ async def startup():
         port=settings.REDIS_PORT
     )
     init_etl.es = AsyncElasticsearch(
-        hosts=[f'{settings.ETL_HOST}:{settings.ETL_PORT}']
+        hosts=f'{settings.ETL_SCHEMA}://{settings.ETL_HOST}:{settings.ETL_PORT}'
     )
 
 
@@ -48,3 +50,8 @@ async def startup():
 async def shutdown():
     await init_etl.es.close()
     await init_redis.redis.close()
+
+
+@app.exception_handler(BaseNotFound)
+async def custom_http_exception_handler(request, exc):
+    return Response(status_code=404, content="Not found")
