@@ -3,10 +3,10 @@ from typing import Optional, List
 from orjson import orjson
 from pydantic import BaseModel
 
-from app.schemas.mixins import orjson_dumps
+from app.schemas.orjson_dump import orjson_dumps
 
 
-class Filmwork(BaseModel):
+class FilmWork(BaseModel):
     id: str
     title: str
     description: Optional[str]

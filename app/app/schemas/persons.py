@@ -3,7 +3,7 @@ from typing import Optional, List
 import orjson
 from pydantic import BaseModel
 
-from app.schemas.mixins import orjson_dumps
+from app.schemas.orjson_dump import orjson_dumps
 
 
 class Person(BaseModel):

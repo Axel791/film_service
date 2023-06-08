@@ -1,8 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from redis.asyncio import Redis
+from elasticsearch import AsyncElasticsearch
+
 from app.api.v1 import api
+
 from app.core.config import settings
+
+from app.db import init_etl
+from app.db import init_redis
 
 
 def create_app():
@@ -24,3 +31,20 @@ def create_app():
 
 
 app = create_app()
+
+
+@app.on_event('startup')
+async def startup():
+    init_redis.redis = Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT
+    )
+    init_etl.es = AsyncElasticsearch(
+        hosts=[f'{settings.ETL_HOST}:{settings.ETL_PORT}']
+    )
+
+
+@app.on_event('shutdown')
+async def shutdown():
+    await init_etl.es.close()
+    await init_redis.redis.close()

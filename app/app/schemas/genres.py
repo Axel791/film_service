@@ -1,15 +1,15 @@
-from typing import Optional, List
+from typing import Optional
 
 import orjson
 from pydantic import BaseModel
 
-from app.schemas.mixins import orjson_dumps
+from app.schemas.orjson_dump import orjson_dumps
 
 
 class Genre(BaseModel):
     id: str
     name: str
-    description: Optional[List[dict]]
+    description: Optional[str]
 
     class Config:
         json_loads = orjson.loads
