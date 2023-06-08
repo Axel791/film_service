@@ -30,8 +30,16 @@ class FilmWorkService:
         film = await self._get_film_from_etl(film_id=film_id)
         return film
 
-    async def list(self) -> Optional[List[FilmWork]]:
-        pass
+    async def list(
+            self,
+            genre: Optional[str] = None,
+            rating_order: Optional[str] = None
+    ) -> Optional[List[FilmWork]]:
+        list_films = await self._list_films_and_filter(
+            genre=genre,
+            rating_order=rating_order
+        )
+        return list_films
 
     async def _get_film_from_etl(self, film_id: str) -> Optional[FilmWork]:
         try:
@@ -40,8 +48,37 @@ class FilmWorkService:
             raise NotFoundFilm
         return FilmWork(**doc['_source'])
 
-    async def _list_films_and_filter(self, filter_params) -> Optional[List[FilmWork]]:
-        pass
+    async def _list_films_and_filter(
+            self,
+            genre: Optional[str] = None,
+            rating_order: Optional[str] = None
+    ) -> Optional[List[FilmWork]]:
+
+        body = {
+            "query": {
+                "match_all": {}
+            }
+        }
+
+        if genre is not None:
+            body["query"] = {
+                "match": {"genre": genre}
+            }
+
+        if rating_order is not None:
+            body["sort"] = [
+                {
+                    "imdb_rating": {
+                        "order": "asc" if rating_order == '-' else 'desc'
+                    }
+                }
+            ]
+
+        try:
+            response = await self._es.search(index='movies', body=body)
+        except NotFoundError:
+            raise NotFoundFilm
+        return [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
 
 
 @lru_cache()
