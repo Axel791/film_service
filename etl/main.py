@@ -112,7 +112,6 @@ if __name__ == "__main__":
                 except Exception as _exc:
                     logger.error(f"Ошибка загрузки данных на: {film_i}: {_exc}")
                     break
-                time.sleep(60)
     except Exception as _exc:
         logger.error(f"ERROR: {_exc}")
     finally:
