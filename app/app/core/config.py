@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = '127.0.0.1'
 
     REDIS_URI: Optional[RedisDsn] = None
+    FILM_CACHE_EXPIRE_IN_SECOND: int = 60
 
     @validator("REDIS_URI", pre=True)
     def assembled_redis_uri(
