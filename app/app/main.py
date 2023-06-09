@@ -17,7 +17,7 @@ from app.exceptions.base import BaseNotFound
 def create_app():
     fastapi_app = FastAPI(
         title=settings.PROJECT_SLUG,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json"
+        openapi_url=f"{settings.API_V1_STR}/openai.json"
     )
 
     fastapi_app.add_middleware(

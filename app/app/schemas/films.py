@@ -21,3 +21,13 @@ class FilmWork(BaseModel):
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps
+
+
+class FilmWorkPerson(BaseModel):
+    id: str
+    title: str
+    imdb_rating: Optional[float]
+
+    class Config:
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps
