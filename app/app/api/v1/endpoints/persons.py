@@ -19,6 +19,8 @@ async def get_person(
 
 @router.get('/{person_id}/films')
 async def list_films(
-        person_id: str
+        person_id: str,
+        rating_order: Optional[str] = None,
+        person_service: PersonService = Depends(person_service)
 ) -> List[FilmWork]:
-    return await person_service.list(person_id=person_id)
+    return await person_service.list(person_id=person_id, rating_order=rating_order)

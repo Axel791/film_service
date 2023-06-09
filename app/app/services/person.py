@@ -48,28 +48,27 @@ class PersonService:
             raise NotFoundPerson
         return Person(**doc['_source'])
 
-    async def _get_films_by_person_id(self, person_id: str) -> Optional[List[FilmWork]]:
-        try:
-            query = {
-                "query": {
-                    "nested": {
-                        "path": "persons",
-                        "query": {
-                            "match": {
-                                "persons.id": person_id
-                            }
-                        }
-                    }
-                },
-                "sort": [
-                    {
-                        "imdb_rating": {
-                            "order": "desc"
-                        }
-                    }
-                ]
+    async def _get_films_by_person_id(self, person_id: str,
+                                      rating_order: Optional[str] = None) -> \
+            Optional[List[FilmWork]]:
+
+        body = {
+            "query": {
+                "match": {"person_id": person_id}
             }
-            response = await self._es.search(index='movies', body=query)
+        }
+
+        if rating_order is not None:
+            body["sort"] = [
+                {
+                    "imdb_rating": {
+                        "order": "asc" if rating_order == '-' else 'desc'
+                    }
+                }
+            ]
+
+        try:
+            response = await self._es.search(index='movies', body=body)
         except NotFoundError:
             raise NotFoundFilm
         return [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
