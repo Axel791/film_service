@@ -1,8 +1,9 @@
+from fastapi import APIRouter, Depends
+
 from app.schemas.genres import Genre
 from app.services.genre import genre_service, GenreService
 
 router = APIRouter()
-
 
 @router.get('/get/{genre_id}')
 async def get_genre(
