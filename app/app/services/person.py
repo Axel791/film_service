@@ -12,8 +12,10 @@ from app.db.init_redis import get_redis
 from app.db.init_etl import get_elastic
 
 from app.schemas.persons import Person
+from app.schemas.films import FilmWork
 
 from app.exceptions.person_exception import NotFoundPerson
+from app.exceptions.film_exception import NotFoundFilm
 
 
 class PersonService:
@@ -30,12 +32,48 @@ class PersonService:
         person = await self._get_person_from_etl(person_id=person_id)
         return person
 
+    async def list(
+            self,
+            person_id: str
+    ) -> Optional[List[FilmWork]]:
+        list_films = await self._get_films_by_person_id(
+            person_id=person_id
+        )
+        return list_films
+
     async def _get_person_from_etl(self, person_id: str) -> Optional[Person]:
         try:
             doc = await self._es.get(index='persons', id=person_id)
         except NotFoundError:
             raise NotFoundPerson
         return Person(**doc['_source'])
+
+    async def _get_films_by_person_id(self, person_id: str) -> Optional[List[FilmWork]]:
+        try:
+            query = {
+                "query": {
+                    "nested": {
+                        "path": "persons",
+                        "query": {
+                            "match": {
+                                "persons.id": person_id
+                            }
+                        }
+                    }
+                },
+                "sort": [
+                    {
+                        "imdb_rating": {
+                            "order": "desc"
+                        }
+                    }
+                ]
+            }
+            response = await self._es.search(index='movies', body=query)
+        except NotFoundError:
+            raise NotFoundFilm
+        return [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
+
 
 @lru_cache()
 def person_service(
