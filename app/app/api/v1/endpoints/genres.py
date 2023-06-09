@@ -1,17 +1,3 @@
-from fastapi import APIRouter, Depends
-
-
-router = APIRouter()
-
-
-@router.get('/hello_genres')
-async def test_func():
-    return {'response': 'hello genres!'}
-
-from fastapi import APIRouter, Depends
-
-from typing import List, Optional
-
 from app.schemas.genres import Genre
 from app.services.genre import genre_service, GenreService
 
