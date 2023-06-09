@@ -30,9 +30,9 @@ class FilmWorkService:
         self._es = es
 
     async def get(self, film_id: str) -> Optional[FilmWork]:
-        film: Optional[FilmWork] = await self._get_film_from_cache(key=film_id)
+        film: Optional[FilmWork] = await self._get_one_film_from_cache(key=film_id)
         if film is None:
-            film: Optional[FilmWork] = await self._get_film_from_etl(film_id=film_id)
+            film = await self._get_film_from_etl(film_id=film_id)
             if film is not None:
                 film_str: str = json.dumps(film.dict())
                 await self._put_data_to_cache(key=film_id, value=film_str)
@@ -56,7 +56,7 @@ class FilmWorkService:
             raise NotFoundFilm
         return FilmWork(**doc['_source'])
 
-    async def _get_film_from_cache(self, key: str) -> Optional[FilmWork]:
+    async def _get_one_film_from_cache(self, key: str) -> Optional[FilmWork]:
         film: Optional[bytes] = await self._redis.get(key)
         if not film:
             return None
