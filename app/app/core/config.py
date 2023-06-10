@@ -3,15 +3,15 @@ from pydantic import BaseSettings, RedisDsn, validator
 
 
 class Settings(BaseSettings):
-    PROJECT_SLUG: str = 'movies_app'
-    API_V1_STR: str = '/api/v1'
+    PROJECT_SLUG: str
+    API_V1_STR: str
 
-    ETL_HOST: str = '127.0.0.1'
-    ETL_PORT: int = 9200
-    ETL_SCHEMA: str = 'http'
+    ETL_HOST: str
+    ETL_PORT: int
+    ETL_SCHEMA: str
 
-    REDIS_PORT: str = 6379
-    REDIS_HOST: str = '127.0.0.1'
+    REDIS_PORT: str
+    REDIS_HOST: str
 
     REDIS_URI: Optional[RedisDsn] = None
 
