@@ -1,3 +1,5 @@
+import json
+
 from loguru import logger
 
 from redis.asyncio import Redis
@@ -8,6 +10,7 @@ from fastapi import Depends
 from typing import Optional, List
 from functools import lru_cache
 
+from app.core.config import settings
 from app.db.init_redis import get_redis
 from app.db.init_etl import get_elastic
 
@@ -27,7 +30,11 @@ class FilmWorkService:
         self._es = es
 
     async def get(self, film_id: str) -> Optional[FilmWork]:
-        film = await self._get_film_from_etl(film_id=film_id)
+        film: Optional[FilmWork] = await self._get_one_film_from_cache(key=film_id)
+        if film is None:
+            film = await self._get_film_from_etl(film_id=film_id)
+            film_str: str = json.dumps(film.dict())
+            await self._put_data_to_cache(key=film_id, value=film_str)
         return film
 
     async def list(
@@ -47,6 +54,27 @@ class FilmWorkService:
         except NotFoundError:
             raise NotFoundFilm
         return FilmWork(**doc['_source'])
+
+    async def _get_one_film_from_cache(self, key: str) -> Optional[FilmWork]:
+        film: Optional[bytes] = await self._redis.get(key)
+        if not film:
+            return None
+        filmwork = FilmWork.parse_raw(film)
+        return filmwork
+
+    async def _get_films_from_cache(self, key: str) -> Optional[List[FilmWork]]:
+        films: Optional[bytes] = await self._redis.get(key)
+        if not films:
+            return None
+        films_list = [FilmWork(**film) for film in json.loads(films)]
+        return films_list
+
+    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
+        await self._redis.setex(
+            name=key,
+            value=value,
+            time=time,
+        )
 
     async def _list_films_and_filter(
             self,
@@ -73,12 +101,18 @@ class FilmWorkService:
                     }
                 }
             ]
+        key: str = json.dumps(body)
+        films: Optional[List[FilmWork]] = await self._get_films_from_cache(key)
+        if films is None:
+            try:
+                response = await self._es.search(index='movies', body=body)
+            except NotFoundError:
+                raise NotFoundFilm
+            films = [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
 
-        try:
-            response = await self._es.search(index='movies', body=body)
-        except NotFoundError:
-            raise NotFoundFilm
-        return [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
+            films_str: str = json.dumps([film.dict() for film in films])
+            await self._put_data_to_cache(key=key, value=films_str)
+        return films
 
 
 @lru_cache()
