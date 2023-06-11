@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     REDIS_URI: Optional[RedisDsn] = None
     FILM_CACHE_EXPIRE_IN_SECOND: int = 60
 
+    DEFAULT_PAGE_SIZE: int
+
     @validator("REDIS_URI", pre=True)
     def assembled_redis_uri(
             cls,

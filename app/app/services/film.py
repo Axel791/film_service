@@ -40,11 +40,15 @@ class FilmWorkService:
     async def list(
             self,
             genre: Optional[str] = None,
-            rating_order: Optional[str] = None
+            rating_order: Optional[str] = None,
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
     ) -> Optional[List[FilmWork]]:
         list_films = await self._list_films_and_filter(
             genre=genre,
-            rating_order=rating_order
+            rating_order=rating_order,
+            page=page,
+            page_size=page_size
         )
         return list_films
 
@@ -79,13 +83,17 @@ class FilmWorkService:
     async def _list_films_and_filter(
             self,
             genre: Optional[str] = None,
-            rating_order: Optional[str] = None
+            rating_order: Optional[str] = None,
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
     ) -> Optional[List[FilmWork]]:
-
+        start = (page - 1) * page_size
         body = {
             "query": {
                 "match_all": {}
-            }
+            },
+            "from": start,
+            "size": page_size
         }
 
         if genre is not None:
