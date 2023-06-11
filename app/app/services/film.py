@@ -33,9 +33,8 @@ class FilmWorkService:
         film: Optional[FilmWork] = await self._get_one_film_from_cache(key=film_id)
         if film is None:
             film = await self._get_film_from_etl(film_id=film_id)
-            if film is not None:
-                film_str: str = json.dumps(film.dict())
-                await self._put_data_to_cache(key=film_id, value=film_str)
+            film_str: str = json.dumps(film.dict())
+            await self._put_data_to_cache(key=film_id, value=film_str)
         return film
 
     async def list(

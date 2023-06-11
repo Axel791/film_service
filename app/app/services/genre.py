@@ -33,9 +33,8 @@ class GenreService:
         genre: Optional[Genre] = await self._get_genre_from_cache(genre_id)
         if genre is None:
             genre = await self._get_genre_from_etl(genre_id=genre_id)
-            if genre is not None:
-                genre_str: str = json.dumps(genre.dict())
-                await self._put_data_to_cache(key=genre_id, value=genre_str)
+            genre_str: str = json.dumps(genre.dict())
+            await self._put_data_to_cache(key=genre_id, value=genre_str)
         return genre
 
     async def _get_genre_from_etl(self, genre_id: str) -> Optional[Genre]:

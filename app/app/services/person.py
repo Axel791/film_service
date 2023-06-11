@@ -35,9 +35,8 @@ class PersonService:
         person: Optional[Person] = await self._get_person_from_cache(key=person_id)
         if person is None:
             person = await self._get_person_from_etl(person_id=person_id)
-            if person is not None:
-                person_str: str = json.dumps(person.dict())
-                await self._put_data_to_cache(key=person_id, value=person_str)
+            person_str: str = json.dumps(person.dict())
+            await self._put_data_to_cache(key=person_id, value=person_str)
         return person
 
     async def list(
