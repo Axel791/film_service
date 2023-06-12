@@ -5,7 +5,11 @@ from app.services.genre import genre_service, GenreService
 
 router = APIRouter()
 
-@router.get('/get/{genre_id}')
+
+@router.get('/get/{genre_id}',
+            summary='Getting a genre by id.',
+            description='Searches for genre by genre_id and returns genre data if it exists.',
+            )
 async def get_genre(
         genre_id: str,
         genre_service: GenreService = Depends(genre_service)
