@@ -7,7 +7,6 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from fastapi import Depends
 
-from typing import Optional, List
 from functools import lru_cache
 
 from app.core.config import settings
@@ -29,23 +28,23 @@ class GenreService:
         self._redis = redis
         self._es = es
 
-    async def get(self, genre_id: str) -> Optional[Genre]:
-        genre: Optional[Genre] = await self._get_genre_from_cache(genre_id)
+    async def get(self, genre_id: str) -> Genre | None:
+        genre: Genre | None = await self._get_genre_from_cache(genre_id)
         if genre is None:
             genre = await self._get_genre_from_etl(genre_id=genre_id)
             genre_str: str = json.dumps(genre.dict())
             await self._put_data_to_cache(key=genre_id, value=genre_str)
         return genre
 
-    async def _get_genre_from_etl(self, genre_id: str) -> Optional[Genre]:
+    async def _get_genre_from_etl(self, genre_id: str) -> Genre | None:
         try:
             doc = await self._es.get(index='genres', id=genre_id)
         except NotFoundError:
             raise NotFoundGenre
         return Genre(**doc['_source'])
 
-    async def _get_genre_from_cache(self, key: str) -> Optional[Genre]:
-        genre: Optional[bytes] = await self._redis.get(key)
+    async def _get_genre_from_cache(self, key: str) -> Genre | None:
+        genre: bytes | None = await self._redis.get(key)
         if not genre:
             return None
         genre_obj = Genre.parse_raw(genre)

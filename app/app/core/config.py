@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from pydantic import BaseSettings, RedisDsn, validator
 
 
@@ -13,13 +13,13 @@ class Settings(BaseSettings):
     REDIS_PORT: str
     REDIS_HOST: str
 
-    REDIS_URI: Optional[RedisDsn] = None
+    REDIS_URI: RedisDsn | None = None
     FILM_CACHE_EXPIRE_IN_SECOND: int = 60
 
     @validator("REDIS_URI", pre=True)
     def assembled_redis_uri(
             cls,
-            v: Optional[str],
+            v: str | None,
             values: Dict[str, Any]
     ) -> Any:
         if isinstance(v, str):

@@ -1,16 +1,9 @@
-from typing import Optional, List
+from typing import List
 
-import orjson
-from pydantic import BaseModel
-
-from app.schemas.orjson_dump import orjson_dumps
+from app.schemas.orjson_dump import BaseOrjson
 
 
-class Person(BaseModel):
+class Person(BaseOrjson):
     id: str
     full_name: str
-    films: Optional[List[dict]]
-
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
+    films: List[dict] | None

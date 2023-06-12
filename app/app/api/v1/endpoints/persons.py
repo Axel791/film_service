@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from typing import List, Optional
+from typing import List
 
 from app.schemas.persons import Person
 from app.schemas.films import FilmWork, FilmWorkPerson
@@ -20,7 +20,7 @@ async def get_person(
 @router.get('/{person_id}/films')
 async def list_films(
         person_id: str,
-        rating_order: Optional[str] = None,
+        rating_order: str | None = None,
         person_service: PersonService = Depends(person_service)
-) -> List[FilmWorkPerson]:
+) -> List[FilmWorkPerson] | None:
     return await person_service.list(person_id=person_id, rating_order=rating_order)
