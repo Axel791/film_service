@@ -80,6 +80,20 @@ class FilmWorkService:
             time=time,
         )
 
+    async def _get_films_from_query(self, body: str):
+        key: str = json.dumps(body)
+        films: Optional[List[FilmWork]] = await self._get_films_from_cache(key)
+        if films is None:
+            try:
+                response = await self._es.search(index='movies', body=body)
+            except NotFoundError:
+                raise NotFoundFilm
+            films = [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
+
+            films_str: str = json.dumps([film.dict() for film in films])
+            await self._put_data_to_cache(key=key, value=films_str)
+        return films
+
     async def _list_films_and_filter(
             self,
             genre: Optional[str] = None,
@@ -109,18 +123,40 @@ class FilmWorkService:
                     }
                 }
             ]
-        key: str = json.dumps(body)
-        films: Optional[List[FilmWork]] = await self._get_films_from_cache(key)
-        if films is None:
-            try:
-                response = await self._es.search(index='movies', body=body)
-            except NotFoundError:
-                raise NotFoundFilm
-            films = [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
+        return self._get_films_from_query(body)
 
-            films_str: str = json.dumps([film.dict() for film in films])
-            await self._put_data_to_cache(key=key, value=films_str)
-        return films
+    async def search(
+            self,
+            query: str = "",
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
+    ) -> Optional[List[FilmWork]]:
+        list_films = await self._search_films(
+            query=query,
+            page=page,
+            page_size=page_size
+        )
+        return list_films
+
+    async def _search_films(
+            self,
+            query: str,
+            page: int,
+            page_size: int
+    ) -> Optional[List[FilmWork]]:
+        start = (page - 1) * page_size
+        body = {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"match": {"title": query}}
+                    ]
+                }
+            },
+            "from": start,
+            "size": page_size
+        }
+        return self._get_films_from_query(body)
 
 
 @lru_cache()
