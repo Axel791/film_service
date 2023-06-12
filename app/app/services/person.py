@@ -54,6 +54,19 @@ class PersonService:
         )
         return list_films
 
+    async def search(
+            self,
+            query: str = "",
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
+    ) -> Optional[List[Person]]:
+        list_persons = await self._search_persons(
+            query=query,
+            page=page,
+            page_size=page_size
+        )
+        return list_persons
+
     async def _get_person_from_etl(self, person_id: str) -> Optional[Person]:
         try:
             doc = await self._es.get(index='persons', id=person_id)
@@ -73,14 +86,12 @@ class PersonService:
                                       page: Optional[int] = 1,
                                       page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
                                       ) -> \
-            Optional[List[FilmWorkPerson
-            ]]:
+            Optional[List[FilmWorkPerson]]:
         start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
         film_ids = []
         for film in person.films:
             film_ids.append(film['id'])
-        print(film_ids)
 
         body = {
             "query": {
@@ -118,12 +129,50 @@ class PersonService:
         films_list = [FilmWorkPerson(**film) for film in json.loads(films)]
         return films_list
 
+    async def _get_persons_from_cache(self, key: str) -> Optional[List[Person]]:
+        persons: Optional[bytes] = await self._redis.get(key)
+        if not persons:
+            return None
+        persons_list = [Person(**person) for person in json.loads(persons)]
+        return persons_list
+
     async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
         await self._redis.setex(
             name=key,
             value=value,
             time=time,
         )
+
+    async def _search_persons(
+            self,
+            query: str,
+            page: int,
+            page_size: int
+    ) -> Optional[List[Person]]:
+        start = (page - 1) * page_size
+        body = {
+            "query": {
+                "bool": {
+                    "must": [
+                        {"match": {"title": query}}
+                    ]
+                }
+            },
+            "from": start,
+            "size": page_size
+        }
+        key: str = json.dumps(body)
+        persons: Optional[List[Person]] = await self._get_persons_from_cache(key)
+        if persons is None:
+            try:
+                response = await self._es.search(index='persons', body=body)
+            except NotFoundError:
+                raise NotFoundPerson
+            persons = [Person(**doc['_source']) for doc in response['hits']['hits']]
+
+            persons_str: str = json.dumps([person.dict() for person in persons])
+            await self._put_data_to_cache(key=key, value=persons_str)
+        return persons
 
 
 @lru_cache()

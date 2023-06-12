@@ -52,6 +52,19 @@ class FilmWorkService:
         )
         return list_films
 
+    async def search(
+            self,
+            query: str = "",
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
+    ) -> Optional[List[FilmWork]]:
+        list_films = await self._search_films(
+            query=query,
+            page=page,
+            page_size=page_size
+        )
+        return list_films
+
     async def _get_film_from_etl(self, film_id: str) -> Optional[FilmWork]:
         try:
             doc = await self._es.get(index='movies', id=film_id)
@@ -124,19 +137,6 @@ class FilmWorkService:
                 }
             ]
         return self._get_films_from_query(body)
-
-    async def search(
-            self,
-            query: str = "",
-            page: int = 1,
-            page_size: int = settings.DEFAULT_PAGE_SIZE
-    ) -> Optional[List[FilmWork]]:
-        list_films = await self._search_films(
-            query=query,
-            page=page,
-            page_size=page_size
-        )
-        return list_films
 
     async def _search_films(
             self,
