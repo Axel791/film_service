@@ -23,7 +23,7 @@ class FilmWork(BaseModel):
         json_dumps = orjson_dumps
 
 
-class FilmWorkPerson(BaseModel):
+class FilmWorkShort(BaseModel):
     id: str
     title: str
     imdb_rating: Optional[float]

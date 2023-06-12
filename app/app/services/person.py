@@ -15,7 +15,7 @@ from app.db.init_redis import get_redis
 from app.db.init_etl import get_elastic
 
 from app.schemas.persons import Person
-from app.schemas.films import FilmWork, FilmWorkPerson
+from app.schemas.films import FilmWorkShort
 
 from app.exceptions.person_exception import NotFoundPerson
 from app.exceptions.film_exception import NotFoundFilm
@@ -45,7 +45,7 @@ class PersonService:
             rating_order: Optional[str] = None,
             page: Optional[int] = 1,
             page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
-    ) -> Optional[List[FilmWork]]:
+    ) -> Optional[List[FilmWorkShort]]:
         list_films = await self._get_films_by_person_id(
             person_id=person_id,
             rating_order=rating_order,
@@ -86,7 +86,7 @@ class PersonService:
                                       page: Optional[int] = 1,
                                       page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
                                       ) -> \
-            Optional[List[FilmWorkPerson]]:
+            Optional[List[FilmWorkShort]]:
         start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
         film_ids = []
@@ -110,23 +110,23 @@ class PersonService:
                 }
             ]
         key: str = json.dumps(body)
-        films: Optional[List[FilmWorkPerson]] = await self._get_films_from_cache(key)
+        films: Optional[List[FilmWorkShort]] = await self._get_films_from_cache(key)
         if films is None:
             try:
                 response = await self._es.search(index='movies', body=body)
             except NotFoundError:
                 raise NotFoundFilm
-            films = [FilmWorkPerson(**doc['_source']) for doc in response['hits']['hits']]
+            films = [FilmWorkShort(**doc['_source']) for doc in response['hits']['hits']]
 
             films_str: str = json.dumps([film.dict() for film in films])
             await self._put_data_to_cache(key=key, value=films_str)
         return films
 
-    async def _get_films_from_cache(self, key: str) -> Optional[List[FilmWorkPerson]]:
+    async def _get_films_from_cache(self, key: str) -> Optional[List[FilmWorkShort]]:
         films: Optional[bytes] = await self._redis.get(key)
         if not films:
             return None
-        films_list = [FilmWorkPerson(**film) for film in json.loads(films)]
+        films_list = [FilmWorkShort(**film) for film in json.loads(films)]
         return films_list
 
     async def _get_persons_from_cache(self, key: str) -> Optional[List[Person]]:
@@ -154,7 +154,7 @@ class PersonService:
             "query": {
                 "bool": {
                     "must": [
-                        {"match": {"title": query}}
+                        {"match": {"full_name": query}}
                     ]
                 }
             },

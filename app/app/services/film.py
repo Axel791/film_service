@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.db.init_redis import get_redis
 from app.db.init_etl import get_elastic
 
-from app.schemas.films import FilmWork
+from app.schemas.films import FilmWork, FilmWorkShort
 
 from app.exceptions.film_exception import NotFoundFilm
 
@@ -57,7 +57,7 @@ class FilmWorkService:
             query: str = "",
             page: int = 1,
             page_size: int = settings.DEFAULT_PAGE_SIZE
-    ) -> Optional[List[FilmWork]]:
+    ) -> Optional[List[FilmWorkShort]]:
         list_films = await self._search_films(
             query=query,
             page=page,
@@ -78,6 +78,13 @@ class FilmWorkService:
             return None
         filmwork = FilmWork.parse_raw(film)
         return filmwork
+
+    async def _get_short_films_from_cache(self, key: str) -> Optional[List[FilmWorkShort]]:
+        films: Optional[bytes] = await self._redis.get(key)
+        if not films:
+            return None
+        films_list = [FilmWorkShort(**film) for film in json.loads(films)]
+        return films_list
 
     async def _get_films_from_cache(self, key: str) -> Optional[List[FilmWork]]:
         films: Optional[bytes] = await self._redis.get(key)
@@ -136,14 +143,25 @@ class FilmWorkService:
                     }
                 }
             ]
-        return self._get_films_from_query(body)
+        key: str = json.dumps(body)
+        films: Optional[List[FilmWork]] = await self._get_films_from_cache(key)
+        if films is None:
+            try:
+                response = await self._es.search(index='movies', body=body)
+            except NotFoundError:
+                raise NotFoundFilm
+            films = [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
+
+            films_str: str = json.dumps([film.dict() for film in films])
+            await self._put_data_to_cache(key=key, value=films_str)
+        return films
 
     async def _search_films(
             self,
             query: str,
             page: int,
             page_size: int
-    ) -> Optional[List[FilmWork]]:
+    ) -> Optional[List[FilmWorkShort]]:
         start = (page - 1) * page_size
         body = {
             "query": {
@@ -156,7 +174,18 @@ class FilmWorkService:
             "from": start,
             "size": page_size
         }
-        return self._get_films_from_query(body)
+        key: str = json.dumps(body)
+        short_films: Optional[List[FilmWorkShort]] = await self._get_short_films_from_cache(key)
+        if short_films is None:
+            try:
+                response = await self._es.search(index='movies', body=body)
+            except NotFoundError:
+                raise NotFoundFilm
+            short_films = [FilmWorkShort(**doc['_source']) for doc in response['hits']['hits']]
+
+            short_films_str: str = json.dumps([short_film.dict() for short_film in short_films])
+            await self._put_data_to_cache(key=key, value=short_films_str)
+        return short_films
 
 
 @lru_cache()
