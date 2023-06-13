@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 from typing import List
 
+from app.core.config import settings
 from app.schemas.persons import Person
 from app.schemas.films import FilmWork, FilmWorkPerson
 from app.services.person import person_service, PersonService
@@ -29,6 +30,9 @@ async def get_person(
 async def list_films(
         person_id: str,
         rating_order: str | None = None,
+        page: Optional[int] = 1,
+        page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
         person_service: PersonService = Depends(person_service)
 ) -> List[FilmWorkPerson] | None:
-    return await person_service.list(person_id=person_id, rating_order=rating_order)
+    return await person_service.list(person_id=person_id, rating_order=rating_order,
+                                     page=page, page_size=page_size)

@@ -1,6 +1,5 @@
 import json
 
-from loguru import logger
 
 from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
@@ -40,11 +39,15 @@ class FilmWorkService:
     async def list(
             self,
             genre: str | None = None,
-            rating_order: str | None = None
+            rating_order: str | None = None,
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
     ) -> List[FilmWork] | None:
         list_films = await self._list_films_and_filter(
             genre=genre,
-            rating_order=rating_order
+            rating_order=rating_order,
+            page=page,
+            page_size=page_size
         )
         return list_films
 
@@ -69,7 +72,7 @@ class FilmWorkService:
         films_list = [FilmWork(**film) for film in json.loads(films)]
         return films_list
 
-    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
+    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.film_cache_expire_in_second):
         await self._redis.setex(
             name=key,
             value=value,
@@ -79,13 +82,17 @@ class FilmWorkService:
     async def _list_films_and_filter(
             self,
             genre: str | None = None,
-            rating_order: str | None = None
+            rating_order: str | None = None,
+            page: int = 1,
+            page_size: int = settings.DEFAULT_PAGE_SIZE
     ) -> List[FilmWork] | None:
-
+        start = (page - 1) * page_size
         body = {
             "query": {
                 "match_all": {}
-            }
+            },
+            "from": start,
+            "size": page_size
         }
 
         if genre is not None:

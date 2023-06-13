@@ -42,11 +42,15 @@ class PersonService:
     async def list(
             self,
             person_id: str,
-            rating_order: str | None = None
-    ) -> List[FilmWork] | None:
+            rating_order: str | None = None,
+            page: Optional[int] = 1,
+            page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE
+    ) -> List[FilmWork] | None
         list_films = await self._get_films_by_person_id(
             person_id=person_id,
-            rating_order=rating_order
+            rating_order=rating_order,
+            page=page,
+            page_size=page_size
         )
         return list_films
 
@@ -65,10 +69,13 @@ class PersonService:
         return person_obj
 
     async def _get_films_by_person_id(self, person_id: str,
-                                      rating_order: str | None = None) -> \
-            List[FilmWorkPerson] | None:
+                                      rating_order: str | None = None,
+                                      page: Optional[int] = 1,
+                                      page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE) -> List[FilmWorkPerson] | None:
+
+                                    
+        start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
-        # film_ids = [film['id'] for films in person.films for film in films]
         film_ids = []
         for film in person.films:
             film_ids.append(film['id'])
@@ -77,7 +84,9 @@ class PersonService:
         body = {
             "query": {
                 "terms": {"id": film_ids}
-            }
+            },
+            "from": start,
+            "size": page_size
         }
 
         if rating_order is not None:
@@ -108,7 +117,7 @@ class PersonService:
         films_list = [FilmWorkPerson(**film) for film in json.loads(films)]
         return films_list
 
-    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
+    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.film_cache_expire_in_second):
         await self._redis.setex(
             name=key,
             value=value,

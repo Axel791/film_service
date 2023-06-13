@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 from typing import List
 
+from app.core.config import settings
 from app.schemas.films import FilmWork
 from app.services.film import film_service, FilmWorkService
 
@@ -26,6 +27,10 @@ async def get_film(
 async def list_films(
         genres: str | None = None,
         rating_order: str | None = None,
+        page: Optional[int] = 1,
+        page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
+
         film_work_service: FilmWorkService = Depends(film_service)
 ) -> List[FilmWork]:
-    return await film_work_service.list(genre=genres, rating_order=rating_order)
+    return await film_work_service.list(genre=genres, rating_order=rating_order,
+                                        page=page, page_size=page_size)
