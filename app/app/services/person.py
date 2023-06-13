@@ -7,7 +7,7 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from fastapi import Depends
 
-from typing import Optional, List
+from typing import List
 from functools import lru_cache
 
 from app.core.config import settings
@@ -31,8 +31,8 @@ class PersonService:
         self._redis = redis
         self._es = es
 
-    async def get(self, person_id: str) -> Optional[Person]:
-        person: Optional[Person] = await self._get_person_from_cache(key=person_id)
+    async def get(self, person_id: str) -> Person | None:
+        person: Person | None = await self._get_person_from_cache(key=person_id)
         if person is None:
             person = await self._get_person_from_etl(person_id=person_id)
             person_str: str = json.dumps(person.dict())
@@ -42,10 +42,10 @@ class PersonService:
     async def list(
             self,
             person_id: str,
-            rating_order: Optional[str] = None,
+            rating_order: str | None = None,
             page: Optional[int] = 1,
-            page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
-    ) -> Optional[List[FilmWork]]:
+            page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE
+    ) -> List[FilmWork] | None
         list_films = await self._get_films_by_person_id(
             person_id=person_id,
             rating_order=rating_order,
@@ -54,27 +54,26 @@ class PersonService:
         )
         return list_films
 
-    async def _get_person_from_etl(self, person_id: str) -> Optional[Person]:
+    async def _get_person_from_etl(self, person_id: str) -> Person | None:
         try:
             doc = await self._es.get(index='persons', id=person_id)
         except NotFoundError:
             raise NotFoundPerson
         return Person(**doc['_source'])
 
-    async def _get_person_from_cache(self, key: str) -> Optional[Person]:
-        person: Optional[bytes] = await self._redis.get(key)
+    async def _get_person_from_cache(self, key: str) -> Person | None:
+        person: bytes | None = await self._redis.get(key)
         if not person:
             return None
         person_obj = Person.parse_raw(person)
         return person_obj
 
     async def _get_films_by_person_id(self, person_id: str,
-                                      rating_order: Optional[str] = None,
+                                      rating_order: str | None = None,
                                       page: Optional[int] = 1,
-                                      page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
-                                      ) -> \
-            Optional[List[FilmWorkPerson
-            ]]:
+                                      page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE) -> List[FilmWorkPerson] | None:
+
+                                    
         start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
         film_ids = []
@@ -99,7 +98,7 @@ class PersonService:
                 }
             ]
         key: str = json.dumps(body)
-        films: Optional[List[FilmWorkPerson]] = await self._get_films_from_cache(key)
+        films: List[FilmWorkPerson] | None = await self._get_films_from_cache(key)
         if films is None:
             try:
                 response = await self._es.search(index='movies', body=body)
@@ -111,8 +110,8 @@ class PersonService:
             await self._put_data_to_cache(key=key, value=films_str)
         return films
 
-    async def _get_films_from_cache(self, key: str) -> Optional[List[FilmWorkPerson]]:
-        films: Optional[bytes] = await self._redis.get(key)
+    async def _get_films_from_cache(self, key: str) -> List[FilmWorkPerson] | None:
+        films: bytes | None = await self._redis.get(key)
         if not films:
             return None
         films_list = [FilmWorkPerson(**film) for film in json.loads(films)]
