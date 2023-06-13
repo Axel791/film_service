@@ -42,11 +42,15 @@ class PersonService:
     async def list(
             self,
             person_id: str,
-            rating_order: Optional[str] = None
+            rating_order: Optional[str] = None,
+            page: Optional[int] = 1,
+            page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
     ) -> Optional[List[FilmWork]]:
         list_films = await self._get_films_by_person_id(
             person_id=person_id,
-            rating_order=rating_order
+            rating_order=rating_order,
+            page=page,
+            page_size=page_size
         )
         return list_films
 
@@ -65,10 +69,14 @@ class PersonService:
         return person_obj
 
     async def _get_films_by_person_id(self, person_id: str,
-                                      rating_order: Optional[str] = None) -> \
-            Optional[List[FilmWorkPerson]]:
+                                      rating_order: Optional[str] = None,
+                                      page: Optional[int] = 1,
+                                      page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
+                                      ) -> \
+            Optional[List[FilmWorkPerson
+            ]]:
+        start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
-        # film_ids = [film['id'] for films in person.films for film in films]
         film_ids = []
         for film in person.films:
             film_ids.append(film['id'])
@@ -77,7 +85,9 @@ class PersonService:
         body = {
             "query": {
                 "terms": {"id": film_ids}
-            }
+            },
+            "from": start,
+            "size": page_size
         }
 
         if rating_order is not None:
