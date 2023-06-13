@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from contextlib import asynccontextmanager
+
 from redis.asyncio import Redis
-from elasticsearch import AsyncElasticsearch, Elasticsearch
+from elasticsearch import AsyncElasticsearch
 
 from app.api.v1 import api
 
@@ -14,10 +16,11 @@ from app.db import init_redis
 from app.exceptions.base import BaseNotFound
 
 
-def create_app():
+def create_app(lifespan):
     fastapi_app = FastAPI(
-        title=settings.PROJECT_SLUG,
-        openapi_url=f"{settings.API_V1_STR}/openai.json"
+        title=settings.project_slug,
+        openapi_url=f"{settings.api_v1_str}/openai.json",
+        lifespan=lifespan
     )
 
     fastapi_app.add_middleware(
@@ -28,28 +31,27 @@ def create_app():
         allow_headers=["*"],
     )
 
-    fastapi_app.include_router(api.api_router, prefix=settings.API_V1_STR)
+    fastapi_app.include_router(api.api_router, prefix=settings.api_v1_str)
     return fastapi_app
 
 
-app = create_app()
-
-
-@app.on_event('startup')
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     init_redis.redis = Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT
+        host=settings.redis_host,
+        port=settings.redis_port
     )
+
     init_etl.es = AsyncElasticsearch(
-        hosts=f'{settings.ETL_SCHEMA}://{settings.ETL_HOST}:{settings.ETL_PORT}'
+        hosts=f'{settings.etl_schema}://{settings.etl_host}:{settings.etl_port}'
     )
 
+    yield
 
-@app.on_event('shutdown')
-async def shutdown():
     await init_etl.es.close()
     await init_redis.redis.close()
+
+app = create_app(lifespan=lifespan)
 
 
 @app.exception_handler(BaseNotFound)

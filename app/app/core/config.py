@@ -1,40 +1,20 @@
-from typing import Any, Dict, Optional
-from pydantic import BaseSettings, RedisDsn, validator
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    PROJECT_SLUG: str
-    API_V1_STR: str
+    project_slug: str
+    api_v1_str: str
 
-    ETL_HOST: str
-    ETL_PORT: int
-    ETL_SCHEMA: str
+    etl_host: str
+    etl_port: str
+    etl_schema: str
 
-    REDIS_PORT: str
-    REDIS_HOST: str
+    redis_port: str
+    redis_host: str
 
-    REDIS_URI: Optional[RedisDsn] = None
-    FILM_CACHE_EXPIRE_IN_SECOND: int = 60
-
-    DEFAULT_PAGE_SIZE: int
-
-    @validator("REDIS_URI", pre=True)
-    def assembled_redis_uri(
-            cls,
-            v: Optional[str],
-            values: Dict[str, Any]
-    ) -> Any:
-        if isinstance(v, str):
-            return v
-        return RedisDsn.build(
-            scheme="redis",
-            host=values.get("REDIS_HOST"),
-            port=values.get("REDIS_PORT"),
-            path="/0"
-        )
+    film_cache_expire_in_second: int = 60
 
     class Config:
-        case_sensitive = True
         env_file = '.env'
         env_file_encoding = 'utf-8'
 

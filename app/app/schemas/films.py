@@ -1,33 +1,20 @@
-from typing import Optional, List
-
-from orjson import orjson
-from pydantic import BaseModel
-
-from app.schemas.orjson_dump import orjson_dumps
+from app.schemas.orjson_dump import BaseOrjson
 
 
-class FilmWork(BaseModel):
+class FilmWork(BaseOrjson):
     id: str
     title: str
-    description: Optional[str]
-    imdb_rating: Optional[float]
-    genre: Optional[list]
+    description: str | None
+    imdb_rating: float | None
+    genre: list | None
     director: str
     actors_names: str
     writers_names: str
-    actors: Optional[list]
-    writers: Optional[list]
-
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
+    actors: list | None
+    writers: list | None
 
 
 class FilmWorkShort(BaseModel):
     id: str
     title: str
-    imdb_rating: Optional[float]
-
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
+    imdb_rating: float | None

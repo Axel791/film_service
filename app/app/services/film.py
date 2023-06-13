@@ -1,13 +1,12 @@
 import json
 
-from loguru import logger
 
 from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from fastapi import Depends
 
-from typing import Optional, List
+from typing import List
 from functools import lru_cache
 
 from app.core.config import settings
@@ -29,8 +28,8 @@ class FilmWorkService:
         self._redis = redis
         self._es = es
 
-    async def get(self, film_id: str) -> Optional[FilmWork]:
-        film: Optional[FilmWork] = await self._get_one_film_from_cache(key=film_id)
+    async def get(self, film_id: str) -> FilmWork | None:
+        film: FilmWork | None = await self._get_one_film_from_cache(key=film_id)
         if film is None:
             film = await self._get_film_from_etl(film_id=film_id)
             film_str: str = json.dumps(film.dict())
@@ -39,11 +38,11 @@ class FilmWorkService:
 
     async def list(
             self,
-            genre: Optional[str] = None,
-            rating_order: Optional[str] = None,
+            genre: str | None = None,
+            rating_order: str | None = None,
             page: int = 1,
             page_size: int = settings.DEFAULT_PAGE_SIZE
-    ) -> Optional[List[FilmWork]]:
+    ) -> List[FilmWork] | None:
         list_films = await self._list_films_and_filter(
             genre=genre,
             rating_order=rating_order,
@@ -51,6 +50,7 @@ class FilmWorkService:
             page_size=page_size
         )
         return list_films
+
 
     async def search(
             self,
@@ -65,19 +65,21 @@ class FilmWorkService:
         )
         return list_films
 
-    async def _get_film_from_etl(self, film_id: str) -> Optional[FilmWork]:
+    async def _get_film_from_etl(self, film_id: str) -> FilmWork | None:
+
         try:
             doc = await self._es.get(index='movies', id=film_id)
         except NotFoundError:
             raise NotFoundFilm
         return FilmWork(**doc['_source'])
 
-    async def _get_one_film_from_cache(self, key: str) -> Optional[FilmWork]:
-        film: Optional[bytes] = await self._redis.get(key)
+    async def _get_one_film_from_cache(self, key: str) -> FilmWork | None:
+        film: bytes | None = await self._redis.get(key)
         if not film:
             return None
         filmwork = FilmWork.parse_raw(film)
         return filmwork
+
 
     async def _get_short_films_from_cache(self, key: str) -> Optional[List[FilmWorkShort]]:
         films: Optional[bytes] = await self._redis.get(key)
@@ -86,14 +88,15 @@ class FilmWorkService:
         films_list = [FilmWorkShort(**film) for film in json.loads(films)]
         return films_list
 
-    async def _get_films_from_cache(self, key: str) -> Optional[List[FilmWork]]:
-        films: Optional[bytes] = await self._redis.get(key)
+    async def _get_films_from_cache(self, key: str) -> List[FilmWork] | None:
+        films: bytes | None = await self._redis.get(key)
+
         if not films:
             return None
         films_list = [FilmWork(**film) for film in json.loads(films)]
         return films_list
 
-    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
+    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.film_cache_expire_in_second):
         await self._redis.setex(
             name=key,
             value=value,
@@ -116,11 +119,11 @@ class FilmWorkService:
 
     async def _list_films_and_filter(
             self,
-            genre: Optional[str] = None,
-            rating_order: Optional[str] = None,
+            genre: str | None = None,
+            rating_order: str | None = None,
             page: int = 1,
             page_size: int = settings.DEFAULT_PAGE_SIZE
-    ) -> Optional[List[FilmWork]]:
+    ) -> List[FilmWork] | None:
         start = (page - 1) * page_size
         body = {
             "query": {
@@ -144,7 +147,7 @@ class FilmWorkService:
                 }
             ]
         key: str = json.dumps(body)
-        films: Optional[List[FilmWork]] = await self._get_films_from_cache(key)
+        films: List[FilmWork] | None = await self._get_films_from_cache(key)
         if films is None:
             try:
                 response = await self._es.search(index='movies', body=body)
