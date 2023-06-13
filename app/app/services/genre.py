@@ -51,7 +51,7 @@ class GenreService:
         genre_obj = Genre.parse_raw(genre)
         return genre_obj
 
-    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
+    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.film_cache_expire_in_second):
         await self._redis.setex(
             name=key,
             value=value,
