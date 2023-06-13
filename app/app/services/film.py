@@ -41,7 +41,7 @@ class FilmWorkService:
             genre: str | None = None,
             rating_order: str | None = None,
             page: int = 1,
-            page_size: int = settings.DEFAULT_PAGE_SIZE
+            page_size: int = settings.default_page_size
     ) -> List[FilmWork] | None:
         list_films = await self._list_films_and_filter(
             genre=genre,
@@ -51,13 +51,12 @@ class FilmWorkService:
         )
         return list_films
 
-
     async def search(
             self,
             query: str = "",
             page: int = 1,
-            page_size: int = settings.DEFAULT_PAGE_SIZE
-    ) -> Optional[List[FilmWorkShort]]:
+            page_size: int = settings.default_page_size
+    ) -> List[FilmWorkShort] | None:
         list_films = await self._search_films(
             query=query,
             page=page,
@@ -80,8 +79,7 @@ class FilmWorkService:
         filmwork = FilmWork.parse_raw(film)
         return filmwork
 
-
-    async def _get_short_films_from_cache(self, key: str) -> Optional[List[FilmWorkShort]]:
+    async def _get_short_films_from_cache(self, key: str) -> List[FilmWorkShort] | None:
         films: Optional[bytes] = await self._redis.get(key)
         if not films:
             return None
@@ -122,7 +120,7 @@ class FilmWorkService:
             genre: str | None = None,
             rating_order: str | None = None,
             page: int = 1,
-            page_size: int = settings.DEFAULT_PAGE_SIZE
+            page_size: int = settings.default_page_size
     ) -> List[FilmWork] | None:
         start = (page - 1) * page_size
         body = {
@@ -164,7 +162,7 @@ class FilmWorkService:
             query: str,
             page: int,
             page_size: int
-    ) -> Optional[List[FilmWorkShort]]:
+    ) -> List[FilmWorkShort] | None:
         start = (page - 1) * page_size
         body = {
             "query": {

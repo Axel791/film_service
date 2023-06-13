@@ -43,9 +43,9 @@ class PersonService:
             self,
             person_id: str,
             rating_order: str | None = None,
-            page: Optional[int] = 1,
-            page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE
-    ) -> List[FilmWork] | None
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ) -> List[FilmWork] | None:
         list_films = await self._get_films_by_person_id(
             person_id=person_id,
             rating_order=rating_order,
@@ -58,7 +58,7 @@ class PersonService:
             self,
             query: str = "",
             page: int = 1,
-            page_size: int = settings.DEFAULT_PAGE_SIZE
+            page_size: int = settings.default_page_size
     ) -> Optional[List[Person]]:
         list_persons = await self._search_persons(
             query=query,
@@ -81,12 +81,13 @@ class PersonService:
         person_obj = Person.parse_raw(person)
         return person_obj
 
-    async def _get_films_by_person_id(self, person_id: str,
-                                      rating_order: str | None = None,
-                                      page: Optional[int] = 1,
-                                      page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE) -> List[FilmWorkPerson] | None:
-
-                                    
+    async def _get_films_by_person_id(
+            self,
+            person_id: str,
+            rating_order: str | None = None,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ) -> List[FilmWorkPerson] | None:
 
         start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
@@ -130,7 +131,7 @@ class PersonService:
         films_list = [FilmWorkShort(**film) for film in json.loads(films)]
         return films_list
 
-    async def _get_persons_from_cache(self, key: str) -> Optional[List[Person]]:
+    async def _get_persons_from_cache(self, key: str) -> List[Person] | None:
         persons: Optional[bytes] = await self._redis.get(key)
         if not persons:
             return None
@@ -149,7 +150,7 @@ class PersonService:
             query: str,
             page: int,
             page_size: int
-    ) -> Optional[List[Person]]:
+    ) -> List[Person] | None:
         start = (page - 1) * page_size
         body = {
             "query": {
