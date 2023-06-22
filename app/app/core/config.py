@@ -5,9 +5,9 @@ class Settings(BaseSettings):
     project_slug: str
     api_v1_str: str
 
-    etl_host: str
-    etl_port: str
-    etl_schema: str
+    es_host: str
+    es_port: str
+    es_schema: str
 
     redis_port: str
     redis_host: str

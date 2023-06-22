@@ -11,7 +11,7 @@ from functools import lru_cache
 
 from app.core.config import settings
 from app.db.init_redis import get_redis
-from app.db.init_etl import get_elastic
+from app.db.init_es import get_elastic
 
 from app.schemas.genres import Genre
 

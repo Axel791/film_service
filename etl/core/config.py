@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
 
-    ETL_HOST: str
+    ES_HOST: str
     ETL_PORT: int
     ETL_SCHEMA: str
 
