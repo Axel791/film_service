@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     DB_PORT: int
 
     ES_HOST: str
-    ETL_PORT: int
-    ETL_SCHEMA: str
+    ES_PORT: int
+    ES_SCHEMA: str
 
     DATABASE_URI: Optional[dict] = None
 

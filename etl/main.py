@@ -19,9 +19,9 @@ from elasticsearch import Elasticsearch
 es = Elasticsearch(
     [
         {
-            "host": settings.ETL_HOST,
-            "port": settings.ETL_PORT,
-            "scheme": settings.ETL_SCHEMA
+            "host": settings.ES_HOST,
+            "port": settings.ES_PORT,
+            "scheme": settings.ES_SCHEMA
         }
     ]
 )
