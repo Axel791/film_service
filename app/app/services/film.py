@@ -18,7 +18,7 @@ class FilmWorkService(SearchService):
             es: AsyncElasticsearch
     ) -> None:
         self._es = es
-        super().__init__(cacheable)
+        super().__init__(cacheable, es)
 
     async def get(self, film_id: str) -> FilmWork | None:
         film = await self._cacheable.get_obj_from_cache(key=film_id, schema=FilmWork)
