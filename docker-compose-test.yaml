@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   nginx:
-    build: ../nginx
+    build: ./nginx
     container_name: ${PROJECT_SLUG}_nginx
     volumes:
       - static_dir:/opt/admin/static/
@@ -24,7 +24,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./etl/db_backup/movies_db.sql:/docker-entrypoint-initdb.d/dump.sql
     env_file:
-      - ../.env
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -34,16 +34,16 @@ services:
 
   admin:
     build:
-      context: ../admin
+      context: ./admin
       dockerfile: admin.dockerfile
     container_name: ${PROJECT_SLUG}_admin
     working_dir: /opt/admin
     volumes:
       - static_dir:/opt/admin/static/
       - media_dir:/opt/admin/media/
-      - ../admin:/opt/admin:rw
+      - ./admin:/opt/admin:rw
     env_file:
-      - ../.env
+      - .env
     depends_on:
       - db
     networks:
@@ -52,14 +52,14 @@ services:
   api:
     container_name: ${PROJECT_SLUG}_api
     build:
-      context: ../app
+      context: ./app
       dockerfile: backend.dockerfile
     env_file:
-      - ../.env
+      - .env
     expose:
       - 80
     volumes:
-      - ../app:/opt/app:rw
+      - ./app:/opt/app:rw
     restart: always
     networks:
       - internal
@@ -80,41 +80,38 @@ services:
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
-      - internal
+      internal:
+        aliases:
+          - elasticsearch
 
   app:
     container_name: ${PROJECT_SLUG}_etl
     build:
-      context: ../etl
+      context: ./etl
       dockerfile: etl.dockerfile
     depends_on:
       - db
       - elasticsearch
     volumes:
-      - ../etl:/opt/etl:rw
+      - ./etl:/opt/etl:rw
     env_file:
-      - ../.env
+      - .env
     networks:
       - internal
 
   tests:
     container_name: ${PROJECT_SLUG}_tests
-    image: python:3.9
     depends_on:
       - api
       - admin
       - db
       - redis
       - elasticsearch
-    volumes:
-      - .:/opt/tests:rw
+    build:
+      context: ./tests
+      dockerfile: test.dockerfile
     env_file:
-      - ../.env
-    entrypoint: >
-      sh -c "pip install -r /tests/requirements.txt
-      && python3 /tests/functional/utils/wait_for_es.py
-      && python3 /tests/functional/utils/wait_for_redis.py
-      && pytest /tests/functional/src"
+      - .env
     networks:
       - internal
 
@@ -124,6 +121,6 @@ volumes:
   pgdata:
   elasticsearch_data:
 
-
 networks:
   internal:
+
