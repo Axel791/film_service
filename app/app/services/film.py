@@ -1,17 +1,13 @@
 import json
 
-from pydantic import BaseModel
+from typing import List
 
 from elasticsearch import AsyncElasticsearch
 
 from .base import SearchService
 from .cacheble_service import CacheableService
 
-from typing import List, Type
-
 from app.schemas.films import FilmWork, FilmWorkShort
-
-from app.exceptions.film_exception import NotFoundFilm
 
 
 class FilmWorkService(SearchService):
@@ -25,9 +21,9 @@ class FilmWorkService(SearchService):
         super().__init__(cacheable)
 
     async def get(self, film_id: str) -> FilmWork | None:
-        film: FilmWork | None = await self._cacheable.get_from_cache(key=film_id, schema=FilmWork)
+        film = await self._cacheable.get_obj_from_cache(key=film_id, schema=FilmWork)
         if film is None:
-            film = await self._get_film_form_etl(film_id=film_id)
+            film = await self.get_obj_from_etl(obj_id=film_id, index='movies', schema=FilmWork)
             film_str = json.dumps(film.dict())
             await self._cacheable.put_to_cache(key=film_id, value=film_str)
         return film
@@ -38,15 +34,8 @@ class FilmWorkService(SearchService):
             rating_order=rating_order
         )
 
-    async def search(self, query: str = ""):
-        pass
-
-    async def _get_film_form_etl(self, film_id: str) -> FilmWork | None:
-        try:
-            doc = await self._es.get(index='movies', id=film_id)
-        except NotFoundError:
-            raise NotFoundFilm
-        return FilmWork(**doc['_source'])
+    async def search(self, query: str = "") -> List[FilmWorkShort] | None:
+        return await self._search_films(query=query)
 
     async def _list_films_and_filter(
             self,
@@ -75,19 +64,19 @@ class FilmWorkService(SearchService):
                     }
                 }
             ]
-        key: str = json.dumps(body)
-        films = await self._cacheable.get_from_cache(key=key, schema=FilmWork)
+        key = json.dumps(body)
+        films = await self._cacheable.get_list_from_cache(key=key, schema=FilmWork)
         if films is None:
-            films = await self._get_response(key=key, body=body, schema=FilmWork)
+            films = await self.get_objects_from_etl(
+                key=key,
+                body=body,
+                schema=FilmWork,
+                index='movies'
+            )
         return films
 
-    async def _search_films(
-            self,
-            query: str,
-            page: int,
-            page_size: int
-    ) -> List[FilmWorkShort] | None:
-        start = (page - 1) * page_size
+    async def _search_films(self, query: str) -> List[FilmWorkShort] | None:
+        start = (self.page - 1) * self.page_size
         body = {
             "query": {
                 "bool": {
@@ -97,20 +86,15 @@ class FilmWorkService(SearchService):
                 }
             },
             "from": start,
-            "size": page_size
+            "size": self.page_size
         }
         key: str = json.dumps(body)
-        films = await self._cacheable.get_from_cache(key=key, schema=FilmWorkShort)
+        films = await self._cacheable.get_list_from_cache(key=key, schema=FilmWorkShort)
         if films is None:
-            films = await self._get_response(key=key, body=body, schema=FilmWorkShort)
-        return films
-
-    async def _get_response(self, body: dict, key: str, schema: Type[BaseModel]):
-        try:
-            response = await self._es.search(index='movies', body=body)
-        except NotFoundError:
-            raise NotFoundFilm
-        films = [schema(**doc['_source']) for doc in response['hits']['hits']]
-        films_str: str = json.dumps([film.dict() for film in films])
-        await self._cacheable.put_to_cache(key=key, value=films_str)
+            films = await self.get_objects_from_etl(
+                key=key,
+                body=body,
+                schema=FilmWorkShort,
+                index='movies'
+            )
         return films
