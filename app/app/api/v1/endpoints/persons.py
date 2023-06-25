@@ -30,8 +30,8 @@ async def get_person(
 async def list_films(
         person_id: str,
         rating_order: str | None = None,
-        page: Optional[int] = 1,
-        page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
+        page: int = 1,
+        page_size: int = settings.default_page_size,
         person_service: PersonService = Depends(person_service)
 ) -> List[FilmWorkShort] | None:
 
@@ -42,8 +42,8 @@ async def list_films(
 @router.get('/search')
 async def list_persons(
         query: str,
-        page: Optional[int] = 1,
-        page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
+        page: int = 1,
+        page_size: int = settings.default_page_size,
         person_service: PersonService = Depends(person_service)
 ) -> List[Person]:
     return await person_service.search(query=query, page=page, page_size=page_size)
