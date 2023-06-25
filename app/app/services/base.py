@@ -47,7 +47,7 @@ class SearchService(ABC):
         try:
             response = await self._es.search(index=index, body=body)
         except NotFoundError:
-            raise NotFoundPerson
+            raise BaseNotFound
         objects = [schema(**doc['_source']) for doc in response['hits']['hits']]
         obj_str: str = json.dumps([obj.dict() for obj in objects])
         await self._cacheable.put_to_cache(key=key, value=obj_str)

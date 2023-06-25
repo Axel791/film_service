@@ -17,7 +17,6 @@ class FilmWorkService(SearchService):
             cacheable: CacheableService,
             es: AsyncElasticsearch
     ) -> None:
-        self._es = es
         super().__init__(cacheable, es)
 
     async def get(self, film_id: str) -> FilmWork | None:
