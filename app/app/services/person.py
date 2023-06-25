@@ -6,7 +6,7 @@ from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from fastapi import Depends
-
+from typing import Optional
 from typing import List
 from functools import lru_cache
 
@@ -14,8 +14,8 @@ from app.core.config import settings
 from app.db.init_redis import get_redis
 from app.db.init_etl import get_elastic
 
-from app.schemas.persons import Person
-from app.schemas.films import FilmWorkShort
+from app.schemas.persons import Person, FilmWo
+from app.schemas.films import FilmWorkShort, FilmWork
 
 from app.exceptions.person_exception import NotFoundPerson
 from app.exceptions.film_exception import NotFoundFilm

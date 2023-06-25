@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from app.schemas.orjson_dump import BaseOrjson
 
 
