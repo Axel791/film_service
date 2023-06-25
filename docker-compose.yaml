@@ -100,27 +100,6 @@ services:
     networks:
       - internal
 
-#  tests:
-#    container_name: ${PROJECT_SLUG}_tests
-#    image: python:3.9
-#    depends_on:
-#      - api
-#      - admin
-#      - db
-#      - redis
-#      - elasticsearch
-#    volumes:
-#      - ./tests:/opt/tests:rw
-#    env_file:
-#      - .env
-#    entrypoint: >
-#      sh -c "pip install -r /tests/requirements.txt
-#      && python3 /tests/functional/utils/wait_for_es.py
-#      && python3 /tests/functional/utils/wait_for_redis.py
-#      && pytest /tests/functional/src"
-#    networks:
-#      - internal
-
 volumes:
   static_dir:
   media_dir:
