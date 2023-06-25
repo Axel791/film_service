@@ -6,7 +6,7 @@ from redis.asyncio import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
 from fastapi import Depends
-
+from typing import Optional
 from typing import List
 from functools import lru_cache
 
@@ -15,7 +15,7 @@ from app.db.init_redis import get_redis
 from app.db.init_es import get_elastic
 
 from app.schemas.persons import Person
-from app.schemas.films import FilmWorkShort
+from app.schemas.films import FilmWorkShort, FilmWork
 
 from app.exceptions.person_exception import NotFoundPerson
 from app.exceptions.film_exception import NotFoundFilm
@@ -87,7 +87,7 @@ class PersonService:
             rating_order: str | None = None,
             page: int | None = 1,
             page_size: int | None = settings.default_page_size
-    ) -> List[FilmWorkPerson] | None:
+    ) -> List[FilmWorkShort] | None:
 
         start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
@@ -112,7 +112,7 @@ class PersonService:
                 }
             ]
         key: str = json.dumps(body)
-        films: List[FilmWorkPerson] | None = await self._get_films_from_cache(key)
+        films: List[FilmWorkShort] | None = await self._get_films_from_cache(key)
         if films is None:
             try:
                 response = await self._es.search(index='movies', body=body)
@@ -124,7 +124,7 @@ class PersonService:
             await self._put_data_to_cache(key=key, value=films_str)
         return films
 
-    async def _get_films_from_cache(self, key: str) -> List[FilmWorkPerson] | None:
+    async def _get_films_from_cache(self, key: str) -> List[FilmWorkShort] | None:
         films: bytes | None = await self._redis.get(key)
         if not films:
             return None
@@ -138,7 +138,7 @@ class PersonService:
         persons_list = [Person(**person) for person in json.loads(persons)]
         return persons_list
 
-    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.FILM_CACHE_EXPIRE_IN_SECOND):
+    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.film_cache_expire_in_second):
         await self._redis.setex(
             name=key,
             value=value,
