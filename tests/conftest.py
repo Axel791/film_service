@@ -8,6 +8,11 @@ from elasticsearch import AsyncElasticsearch
 
 from settings import test_settings
 
+@pytest.fixture(scope='session')
+async def es_client():
+    client = AsyncElasticsearch(hosts='127.0.0.1:9200')
+    yield client
+    await client.close()
 
 @pytest.fixture
 def es_write_data():
@@ -26,7 +31,7 @@ def es_write_data():
         response = await es_client.bulk(operations=str_query, refresh=True)
         await es_client.close()
         if response['errors']:
-            print(response['errors'])
+            print(response)
             raise Exception('Ошибка записи данных в Elasticsearch')
 
     return inner

@@ -1,37 +1,24 @@
-import datetime
 import uuid
-import json
 
 import aiohttp
 import pytest
 
-from elasticsearch import AsyncElasticsearch
-
-from settings import test_settings
-from conftest import es_write_data
-
-
-#  Название теста должно начинаться со слова `test_`
-#  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
 
 @pytest.mark.parametrize(
     'query_data, expected_answer',
     [
         (
-                {'search': 'The Star'},
+                {'query': 'The Star', "page_size": 50},
                 {'status': 200, 'length': 50}
         ),
         (
-                {'search': 'Mashed potato'},
+                {'query': ''},
                 {'status': 200, 'length': 0}
         )
     ]
 )
-
 @pytest.mark.asyncio
 async def test_search(es_write_data, query_data, expected_answer):
-    # 1. Генерируем данные для ES
-
     es_data = [{
         'id': str(uuid.uuid4()),
         'imdb_rating': 8.5,
@@ -48,25 +35,21 @@ async def test_search(es_write_data, query_data, expected_answer):
         'writers': [
             {'id': '333', 'name': 'Ben'},
             {'id': '444', 'name': 'Howard'}
-        ],
-        'created_at': datetime.datetime.now().isoformat(),
-        'updated_at': datetime.datetime.now().isoformat(),
-        'film_work_type': 'movie'
-    } for _ in range(60)]
+        ]
+    } for _ in range(50)]
 
     await es_write_data(es_data)
 
     session = aiohttp.ClientSession()
-    url = test_settings.es_host + '/api/v1/search'
-
+    url = 'http://movies_app_api/api/v1/films/search'
+    print(url)
     async with session.get(url, params=query_data) as response:
-        body = await response.json()
-        headers = response.headers
+        data = await response.json()
         status = response.status
     await session.close()
 
-    assert status == 200
-    assert len(response.body) == expected_answer
+    assert status == expected_answer['status']
+    assert len(data) == expected_answer['length']
 
 # import pytest
 # from elasticsearch import NotFoundError
