@@ -3,22 +3,15 @@ from typing import List
 
 import pytest
 import aiohttp
+import asyncio
 
 from elasticsearch import AsyncElasticsearch
 
 from settings import test_settings
 
 
-@pytest.fixture(scope='session')
-async def es_client():
-    hosts = f'{test_settings.es_schema}://{test_settings.es_host}:{test_settings.es_port}'
-    client = AsyncElasticsearch(hosts=hosts)
-    yield client
-    await client.close()
-
-
 @pytest.fixture
-def es_write_data(es_client: AsyncElasticsearch):
+def es_write_data():
     async def inner(data: List[dict], index: str):
         bulk_query = []
         for row in data:
@@ -28,8 +21,10 @@ def es_write_data(es_client: AsyncElasticsearch):
             ])
 
         str_query = '\n'.join(bulk_query) + '\n'
-
-        response = await es_client.bulk(operations=str_query, refresh=True)
+        hosts = f'{test_settings.es_schema}://{test_settings.es_host}:{test_settings.es_port}'
+        client = AsyncElasticsearch(hosts=hosts)
+        response = await client.bulk(operations=str_query, refresh=True)
+        await client.close()
         if response['errors']:
             raise Exception('Ошибка записи данных в Elasticsearch')
 
