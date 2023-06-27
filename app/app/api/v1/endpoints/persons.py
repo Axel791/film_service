@@ -5,7 +5,7 @@ from typing import List
 from app.core.config import settings
 from app.schemas.persons import Person
 from app.schemas.films import FilmWorkShort
-from app.services.person import person_service, PersonService
+from app.services.person import get_person_service, PersonService
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ router = APIRouter()
             )
 async def get_person(
         person_id: str,
-        person_service: PersonService = Depends(person_service)
+        person_service: PersonService = Depends(get_person_service)
 ) -> Person:
     return await person_service.get(person_id=person_id)
 
@@ -30,20 +30,19 @@ async def get_person(
 async def list_films(
         person_id: str,
         rating_order: str | None = None,
-        page: Optional[int] = 1,
-        page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
-        person_service: PersonService = Depends(person_service)
-) -> List[FilmWorkPerson] | None:
+        page: int | None = 1,
+        page_size: int | None = settings.default_page_size,
+        person_service: PersonService = Depends(get_person_service)
+) -> List[FilmWorkShort] | None:
 
-    return await person_service.list(person_id=person_id, rating_order=rating_order,
-                                     page=page, page_size=page_size)
+    return await person_service.list(person_id=person_id, rating_order=rating_order)
 
 
 @router.get('/search')
 async def list_persons(
         query: str,
-        page: Optional[int] = 1,
-        page_size: Optional[int] = settings.DEFAULT_PAGE_SIZE,
-        person_service: PersonService = Depends(person_service)
+        page: int | None = 1,
+        page_size: int | None = settings.default_page_size,
+        person_service: PersonService = Depends(get_person_service)
 ) -> List[Person]:
-    return await person_service.search(query=query, page=page, page_size=page_size)
+    return await person_service.search(query=query)

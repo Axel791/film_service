@@ -17,13 +17,13 @@ class CacheableService:
         self._redis = redis
 
     async def get_list_from_cache(self, key: str, schema: Type[BaseModel]) -> List | None:
-        objects: bytes | None = await self._redis.get(key)
+        objects = await self._redis.get(key)
         if not objects:
             return None
         return [schema.parse_obj(obj) for obj in json.loads(objects)]
 
     async def get_obj_from_cache(self, key: str, schema: Type[BaseModel]):
-        obj: bytes | None = await self._redis.get(key)
+        obj = await self._redis.get(key)
         if not obj:
             return None
         return schema.parse_raw(obj)

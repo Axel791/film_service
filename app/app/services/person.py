@@ -1,14 +1,18 @@
 import json
 
 from elasticsearch import AsyncElasticsearch
+from fastapi import Depends
 
 from typing import List
+from functools import lru_cache
 
 from app.schemas.persons import Person
 from app.schemas.films import FilmWorkShort
 
+from app.db.init_etl import get_elastic
+
 from .base import SearchService
-from .cacheble_service import CacheableService
+from .cacheble_service import CacheableService, get_cacheable_service
 
 
 class PersonService(SearchService):
@@ -106,3 +110,11 @@ class PersonService(SearchService):
                 schema=Person
             )
         return persons
+
+
+@lru_cache()
+def get_person_service(
+        cacheable: CacheableService = Depends(get_cacheable_service),
+        es: AsyncElasticsearch = Depends(get_elastic)
+) -> PersonService:
+    return PersonService(cacheable=cacheable, es=es)
