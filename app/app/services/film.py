@@ -9,6 +9,8 @@ from elasticsearch import AsyncElasticsearch
 from .base import SearchService
 from .cacheble_service import CacheableService, get_cacheable_service
 
+from app.core.config import settings
+
 from app.db.init_etl import get_elastic
 from app.schemas.films import FilmWork, FilmWorkShort
 
@@ -30,27 +32,46 @@ class FilmWorkService(SearchService):
             await self._cacheable.put_to_cache(key=film_id, value=film_str)
         return film
 
-    async def list(self, genre: str | None = None, rating_order: str | None = None):
+    async def list(
+            self,
+            genre: str | None = None,
+            rating_order: str | None = None,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ):
         return await self._list_films_and_filter(
             genre=genre,
-            rating_order=rating_order
+            rating_order=rating_order,
+            page=page,
+            page_size=page_size
         )
 
-    async def search(self, query: str = "") -> List[FilmWorkShort] | None:
-        return await self._search_films(query=query)
+    async def search(
+            self,
+            query: str = "",
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ) -> List[FilmWorkShort] | None:
+        return await self._search_films(
+            query=query,
+            page=page,
+            page_size=page_size
+        )
 
     async def _list_films_and_filter(
             self,
             genre: str | None = None,
-            rating_order: str | None = None
+            rating_order: str | None = None,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
     ) -> List[FilmWork] | None:
-        start = (self.page - 1) * self.page_size
+        start = (page - 1) * page_size
         body = {
             "query": {
                 "match_all": {}
             },
             "from": start,
-            "size": self.page_size
+            "size": page_size
         }
 
         if genre is not None:
@@ -77,8 +98,13 @@ class FilmWorkService(SearchService):
             )
         return films
 
-    async def _search_films(self, query: str) -> List[FilmWorkShort] | None:
-        start = (self.page - 1) * self.page_size
+    async def _search_films(
+            self,
+            query: str,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ) -> List[FilmWorkShort] | None:
+        start = (page - 1) * page_size
         body = {
             "query": {
                 "bool": {
@@ -88,7 +114,7 @@ class FilmWorkService(SearchService):
                 }
             },
             "from": start,
-            "size": self.page_size
+            "size": page_size
         }
         key: str = json.dumps(body)
         films = await self._cacheable.get_list_from_cache(key=key, schema=FilmWorkShort)

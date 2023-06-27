@@ -1,10 +1,13 @@
 import json
 
+
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from typing import List
 from functools import lru_cache
+
+from app.core.config import settings
 
 from app.schemas.persons import Person
 from app.schemas.films import FilmWorkShort
@@ -40,21 +43,36 @@ class PersonService(SearchService):
             self,
             person_id: str | None = None,
             rating_order: str | None = None,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
     ):
-        return self._get_films_by_person_id(
+        return await self._get_films_by_person_id(
             person_id=person_id,
-            rating_order=rating_order
+            rating_order=rating_order,
+            page=page,
+            page_size=page_size
         )
 
-    async def search(self, query: str = ""):
-        return self._search_persons(query=query)
+    async def search(
+            self,
+            query: str = "",
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ):
+        return await self._search_persons(
+            query=query,
+            page=page,
+            page_size=page_size
+        )
 
     async def _get_films_by_person_id(
             self,
             person_id: str,
-            rating_order: str | None = None
+            rating_order: str | None = None,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
     ) -> List[FilmWorkShort] | None:
-        start = (self.page - 1) * self.page_size
+        start = (page - 1) * page_size
         person = await self.get(person_id=person_id)
         film_ids = []
         for film in person.films:
@@ -87,7 +105,12 @@ class PersonService(SearchService):
             )
         return films
 
-    async def _search_persons(self, query: str):
+    async def _search_persons(
+            self,
+            query: str,
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ):
         start = (page - 1) * page_size
         body = {
             "query": {
@@ -103,7 +126,7 @@ class PersonService(SearchService):
         key = json.dumps(body)
         persons = await self._cacheable.get_list_from_cache(key=key, schema=Person)
         if persons is None:
-            persons = self.get_objects_from_etl(
+            persons = await self.get_objects_from_etl(
                 body=body,
                 key=key,
                 index='persons',

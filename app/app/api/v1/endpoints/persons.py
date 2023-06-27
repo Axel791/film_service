@@ -27,7 +27,7 @@ async def get_person(
             description='Searches for a person by id and returns truncated information '
                         'about films in which the person was involved.',
             )
-async def list_films(
+async def get_persons_films_by_id(
         person_id: str,
         rating_order: str | None = None,
         page: int | None = 1,
@@ -35,14 +35,23 @@ async def list_films(
         person_service: PersonService = Depends(get_person_service)
 ) -> List[FilmWorkShort] | None:
 
-    return await person_service.list(person_id=person_id, rating_order=rating_order)
+    return await person_service.list(
+        person_id=person_id,
+        rating_order=rating_order,
+        page=page,
+        page_size=page_size
+    )
 
 
 @router.get('/search')
-async def list_persons(
+async def search_persons(
         query: str,
         page: int | None = 1,
         page_size: int | None = settings.default_page_size,
         person_service: PersonService = Depends(get_person_service)
 ) -> List[Person]:
-    return await person_service.search(query=query)
+    return await person_service.search(
+        query=query,
+        page=page,
+        page_size=page_size
+    )

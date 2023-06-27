@@ -31,14 +31,23 @@ async def list_films(
         page_size: int | None = settings.default_page_size,
         film_work_service: FilmWorkService = Depends(get_film_service)
 ) -> List[FilmWork]:
-    return await film_work_service.list(genre=genres, rating_order=rating_order)
+    return await film_work_service.list(
+        genre=genres,
+        rating_order=rating_order,
+        page=page,
+        page_size=page_size
+    )
 
 
 @router.get('/search')
-async def list_films(
+async def search_films(
         query: str,
         page: int | None = 1,
         page_size: int | None = settings.default_page_size,
         film_work_service: FilmWorkService = Depends(get_film_service)
 ) -> List[FilmWorkShort]:
-    return await film_work_service.search(query=query)
+    return await film_work_service.search(
+        query=query,
+        page=page,
+        page_size=page_size
+    )
