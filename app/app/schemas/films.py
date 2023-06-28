@@ -14,7 +14,7 @@ class FilmWork(BaseOrjson):
     writers: list | None
 
 
-class FilmWorkShort(BaseModel):
+class FilmWorkShort(BaseOrjson):
     id: str
     title: str
     imdb_rating: float | None

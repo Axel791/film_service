@@ -7,14 +7,29 @@ import pytest
 
 from elasticsearch import AsyncElasticsearch
 
-from tests.functional.settings import test_settings
+from settings import test_settings
+from conftest import es_write_data
 
 
 #  Название теста должно начинаться со слова `test_`
 #  Любой тест с асинхронными вызовами нужно оборачивать декоратором `pytest.mark.asyncio`, который следит за запуском и работой цикла событий.
 
+@pytest.mark.parametrize(
+    'query_data, expected_answer',
+    [
+        (
+                {'search': 'The Star'},
+                {'status': 200, 'length': 50}
+        ),
+        (
+                {'search': 'Mashed potato'},
+                {'status': 200, 'length': 0}
+        )
+    ]
+)
+
 @pytest.mark.asyncio
-async def test_search():
+async def test_search(es_write_data, query_data, expected_answer):
     # 1. Генерируем данные для ES
 
     es_data = [{
@@ -39,38 +54,19 @@ async def test_search():
         'film_work_type': 'movie'
     } for _ in range(60)]
 
-    bulk_query = []
-    for row in es_data:
-        bulk_query.extend([
-            json.dumps({'index': {'_index': 'movies', '_id': row['id']}}),
-            json.dumps(row)
-        ])
-
-    str_query = '\n'.join(bulk_query) + '\n'
-
-
-    es_client = AsyncElasticsearch(hosts=test_settings.es_host,
-                                   validate_cert=False,
-                                   use_ssl=False)
-    response = await es_client.bulk(str_query, refresh=True)
-    await es_client.close()
-    if response['errors']:
-        raise Exception('Ошибка записи данных в Elasticsearch')
-
+    await es_write_data(es_data)
 
     session = aiohttp.ClientSession()
-    url = test_settings.service_url + '/api/v1/search'
-    query_data = {'search': 'The Star'}
+    url = test_settings.es_host + '/api/v1/search'
+
     async with session.get(url, params=query_data) as response:
         body = await response.json()
         headers = response.headers
         status = response.status
     await session.close()
 
-
     assert status == 200
-    assert len(response.body) == 50
-
+    assert len(response.body) == expected_answer
 
 # import pytest
 # from elasticsearch import NotFoundError

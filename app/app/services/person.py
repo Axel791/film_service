@@ -3,7 +3,7 @@ import json
 
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
-
+from typing import Optional
 from typing import List
 from functools import lru_cache
 
@@ -12,7 +12,7 @@ from app.db.init_es import get_elastic
 
 
 from app.schemas.persons import Person
-from app.schemas.films import FilmWorkShort
+from app.schemas.films import FilmWorkShort, FilmWork
 
 from app.db.init_etl import get_elastic
 
