@@ -4,7 +4,7 @@ from typing import List
 
 from app.core.config import settings
 from app.schemas.films import FilmWork, FilmWorkShort
-from app.services.film import film_service, FilmWorkService
+from app.services.film import get_film_service, FilmWorkService
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ router = APIRouter()
             )
 async def get_film(
         film_id: str,
-        film_work_service: FilmWorkService = Depends(film_service)
+        film_work_service: FilmWorkService = Depends(get_film_service)
 ) -> FilmWork:
     return await film_work_service.get(film_id=film_id)
 
@@ -29,18 +29,25 @@ async def list_films(
         rating_order: str | None = None,
         page: int | None = 1,
         page_size: int | None = settings.default_page_size,
-
-        film_work_service: FilmWorkService = Depends(film_service)
+        film_work_service: FilmWorkService = Depends(get_film_service)
 ) -> List[FilmWork]:
-    return await film_work_service.list(genre=genres, rating_order=rating_order,
-                                        page=page, page_size=page_size)
+    return await film_work_service.list(
+        genre=genres,
+        rating_order=rating_order,
+        page=page,
+        page_size=page_size
+    )
 
 
 @router.get('/search')
-async def list_films(
+async def search_films(
         query: str,
         page: int | None = 1,
         page_size: int | None = settings.default_page_size,
-        film_work_service: FilmWorkService = Depends(film_service)
+        film_work_service: FilmWorkService = Depends(get_film_service)
 ) -> List[FilmWorkShort]:
-    return await film_work_service.search(query=query, page=page, page_size=page_size)
+    return await film_work_service.search(
+        query=query,
+        page=page,
+        page_size=page_size
+    )

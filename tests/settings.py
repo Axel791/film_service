@@ -10,4 +10,5 @@ class TestSettings(BaseSettings):
     redis_host: str
 
 
+
 test_settings = TestSettings()
