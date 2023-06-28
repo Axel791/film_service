@@ -1,11 +1,12 @@
 from elasticsearch import Elasticsearch
+from app.core.config import settings
 
 es = Elasticsearch(
     [
         {
             "host": "loc",
-            "port": settings.ETL_PORT,
-            "scheme": settings.ETL_SCHEMA
+            "port": settings.es_port,
+            "scheme": settings.es_schema
         }
     ]
 )
