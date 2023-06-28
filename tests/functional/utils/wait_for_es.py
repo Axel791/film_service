@@ -1,7 +1,6 @@
 import time
 from settings import test_settings
 
-
 from elasticsearch import Elasticsearch
 
 if __name__ == '__main__':
@@ -11,4 +10,3 @@ if __name__ == '__main__':
         if es_client.ping():
             break
         time.sleep(1)
-

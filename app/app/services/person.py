@@ -14,8 +14,6 @@ from app.db.init_es import get_elastic
 from app.schemas.persons import Person
 from app.schemas.films import FilmWorkShort, FilmWork
 
-from app.db.init_etl import get_elastic
-
 from .base import SearchService
 from .cacheble_service import CacheableService, get_cacheable_service
 

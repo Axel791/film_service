@@ -1,5 +1,5 @@
 from app.schemas.orjson_dump import BaseOrjson
-from pydantic import BaseModel
+
 
 class FilmWork(BaseOrjson):
     id: str
@@ -14,7 +14,7 @@ class FilmWork(BaseOrjson):
     writers: list | None
 
 
-class FilmWorkShort(BaseModel):
+class FilmWorkShort(BaseOrjson):
     id: str
     title: str
     imdb_rating: float | None
