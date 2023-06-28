@@ -1,5 +1,5 @@
 from app.schemas.orjson_dump import BaseOrjson
-
+from pydantic import BaseModel
 
 class FilmWork(BaseOrjson):
     id: str
