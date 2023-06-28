@@ -1,13 +1,14 @@
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings
 
 
 class TestSettings(BaseSettings):
-    es_host: str = Field(default='elasticsearch', env='ES_HOST')
-    es_port: str = Field(default=9200, env='ES_PORT')
-    es_schema: str = Field(default='http', env='ES_SCHEMA')
+    es_host: str
+    es_port: str
+    es_schema: str
 
-    redis_port: str = Field(default=6379, env='REDIS_PORT')
-    redis_host: str = Field(default='redis', env='REDIS_HOST')
+    redis_port: str
+    redis_host: str
+
 
 
 test_settings = TestSettings()
