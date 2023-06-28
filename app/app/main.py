@@ -10,7 +10,7 @@ from app.api.v1 import api
 
 from app.core.config import settings
 
-from app.db import init_etl
+from app.db import init_es
 from app.db import init_redis
 
 from app.exceptions.base import BaseNotFound
@@ -42,13 +42,13 @@ async def lifespan(app: FastAPI):
         port=settings.redis_port
     )
 
-    init_etl.es = AsyncElasticsearch(
-        hosts=f'{settings.etl_schema}://{settings.etl_host}:{settings.etl_port}'
+    init_es.es = AsyncElasticsearch(
+        hosts=f'{settings.es_schema}://{settings.es_host}:{settings.es_port}'
     )
 
     yield
 
-    await init_etl.es.close()
+    await init_es.es.close()
     await init_redis.redis.close()
 
 app = create_app(lifespan=lifespan)
