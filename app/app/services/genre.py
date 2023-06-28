@@ -8,7 +8,7 @@ from fastapi import Depends
 from .base import SearchService
 from .cacheble_service import CacheableService, get_cacheable_service
 
-from app.db.init_etl import get_elastic
+from app.db.init_es import get_elastic
 
 from app.schemas.genres import Genre
 
