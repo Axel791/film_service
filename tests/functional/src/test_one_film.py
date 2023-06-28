@@ -1,6 +1,6 @@
 import pytest
 
-from tests.functional.conftest import generate_film
+from tests.conftest import generate_film
 
 CORRECT_FILM_UUID: str = '5b965eee-657e-4ea6-a06f-3351fdd174e0'
 WRONG_FILM_UUID: str = '5b965eee-657e-4ea6-a06f-3351fdd174e1'

@@ -1,126 +1,69 @@
 import json
 
-
-from redis.asyncio import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
-
-from fastapi import Depends
-
 from typing import List
 from functools import lru_cache
 
+from fastapi import Depends
+from elasticsearch import AsyncElasticsearch
+
+from .base import SearchService
+from .cacheble_service import CacheableService, get_cacheable_service
+
 from app.core.config import settings
-from app.db.init_redis import get_redis
 from app.db.init_es import get_elastic
 
 from app.schemas.films import FilmWork, FilmWorkShort
 
-from app.exceptions.film_exception import NotFoundFilm
 
-
-class FilmWorkService:
+class FilmWorkService(SearchService):
 
     def __init__(
             self,
-            redis: Redis,
+            cacheable: CacheableService,
             es: AsyncElasticsearch
     ) -> None:
-        self._redis = redis
-        self._es = es
+        super().__init__(cacheable, es)
 
     async def get(self, film_id: str) -> FilmWork | None:
-        film: FilmWork | None = await self._get_one_film_from_cache(key=film_id)
+        film = await self._cacheable.get_obj_from_cache(key=film_id, schema=FilmWork)
         if film is None:
-            film = await self._get_film_from_etl(film_id=film_id)
-            film_str: str = json.dumps(film.dict())
-            await self._put_data_to_cache(key=film_id, value=film_str)
+            film = await self.get_obj_from_etl(obj_id=film_id, index='movies', schema=FilmWork)
+            film_str = json.dumps(film.dict())
+            await self._cacheable.put_to_cache(key=film_id, value=film_str)
         return film
 
     async def list(
             self,
             genre: str | None = None,
             rating_order: str | None = None,
-            page: int = 1,
-            page_size: int = settings.default_page_size
-    ) -> List[FilmWork] | None:
-        list_films = await self._list_films_and_filter(
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
+    ):
+        return await self._list_films_and_filter(
             genre=genre,
             rating_order=rating_order,
             page=page,
             page_size=page_size
         )
-        return list_films
 
     async def search(
             self,
             query: str = "",
-            page: int = 1,
-            page_size: int = settings.default_page_size
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
     ) -> List[FilmWorkShort] | None:
-        list_films = await self._search_films(
+        return await self._search_films(
             query=query,
             page=page,
             page_size=page_size
         )
-        return list_films
-
-    async def _get_film_from_etl(self, film_id: str) -> FilmWork | None:
-
-        try:
-            doc = await self._es.get(index='movies', id=film_id)
-        except NotFoundError:
-            raise NotFoundFilm
-        return FilmWork(**doc['_source'])
-
-    async def _get_one_film_from_cache(self, key: str) -> FilmWork | None:
-        film: bytes | None = await self._redis.get(key)
-        if not film:
-            return None
-        filmwork = FilmWork.parse_raw(film)
-        return filmwork
-
-    async def _get_short_films_from_cache(self, key: str) -> List[FilmWorkShort] | None:
-        films: Optional[bytes] = await self._redis.get(key)
-        if not films:
-            return None
-        films_list = [FilmWorkShort(**film) for film in json.loads(films)]
-        return films_list
-
-    async def _get_films_from_cache(self, key: str) -> List[FilmWork] | None:
-        films: bytes | None = await self._redis.get(key)
-
-        if not films:
-            return None
-        films_list = [FilmWork(**film) for film in json.loads(films)]
-        return films_list
-
-    async def _put_data_to_cache(self, key: str, value: str, time: int = settings.film_cache_expire_in_second):
-        await self._redis.setex(
-            name=key,
-            value=value,
-            time=time,
-        )
-
-    async def _get_films_from_query(self, body: str):
-        key: str = json.dumps(body)
-        films: Optional[List[FilmWork]] = await self._get_films_from_cache(key)
-        if films is None:
-            try:
-                response = await self._es.search(index='movies', body=body)
-            except NotFoundError:
-                raise NotFoundFilm
-            films = [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
-
-            films_str: str = json.dumps([film.dict() for film in films])
-            await self._put_data_to_cache(key=key, value=films_str)
-        return films
 
     async def _list_films_and_filter(
             self,
             genre: str | None = None,
             rating_order: str | None = None,
-            page: int = 1,
-            page_size: int = settings.default_page_size
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
     ) -> List[FilmWork] | None:
         start = (page - 1) * page_size
         body = {
@@ -144,24 +87,22 @@ class FilmWorkService:
                     }
                 }
             ]
-        key: str = json.dumps(body)
-        films: List[FilmWork] | None = await self._get_films_from_cache(key)
+        key = json.dumps(body)
+        films = await self._cacheable.get_list_from_cache(key=key, schema=FilmWork)
         if films is None:
-            try:
-                response = await self._es.search(index='movies', body=body)
-            except NotFoundError:
-                raise NotFoundFilm
-            films = [FilmWork(**doc['_source']) for doc in response['hits']['hits']]
-
-            films_str: str = json.dumps([film.dict() for film in films])
-            await self._put_data_to_cache(key=key, value=films_str)
+            films = await self.get_objects_from_etl(
+                key=key,
+                body=body,
+                schema=FilmWork,
+                index='movies'
+            )
         return films
 
     async def _search_films(
             self,
             query: str,
-            page: int,
-            page_size: int
+            page: int | None = 1,
+            page_size: int | None = settings.default_page_size
     ) -> List[FilmWorkShort] | None:
         start = (page - 1) * page_size
         body = {
@@ -176,22 +117,20 @@ class FilmWorkService:
             "size": page_size
         }
         key: str = json.dumps(body)
-        short_films: Optional[List[FilmWorkShort]] = await self._get_short_films_from_cache(key)
-        if short_films is None:
-            try:
-                response = await self._es.search(index='movies', body=body)
-            except NotFoundError:
-                raise NotFoundFilm
-            short_films = [FilmWorkShort(**doc['_source']) for doc in response['hits']['hits']]
-
-            short_films_str: str = json.dumps([short_film.dict() for short_film in short_films])
-            await self._put_data_to_cache(key=key, value=short_films_str)
-        return short_films
+        films = await self._cacheable.get_list_from_cache(key=key, schema=FilmWorkShort)
+        if films is None:
+            films = await self.get_objects_from_etl(
+                key=key,
+                body=body,
+                schema=FilmWorkShort,
+                index='movies'
+            )
+        return films
 
 
 @lru_cache()
-def film_service(
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic)
+def get_film_service(
+        cacheable: CacheableService = Depends(get_cacheable_service),
+        es: AsyncElasticsearch = Depends(get_elastic)
 ) -> FilmWorkService:
-    return FilmWorkService(es=elastic, redis=redis)
+    return FilmWorkService(cacheable=cacheable, es=es)

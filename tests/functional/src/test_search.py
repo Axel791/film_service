@@ -1,6 +1,6 @@
 import pytest
 
-from tests.functional.conftest import generate_film
+from tests.conftest import generate_film
 
 
 @pytest.mark.parametrize(

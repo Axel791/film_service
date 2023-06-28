@@ -2,7 +2,7 @@ from random import randint
 
 import pytest
 
-from tests.functional.conftest import generate_film
+from tests.conftest import generate_film
 
 ALL_FILMS_COUNT: int = 25
 DEFAULT_PAGE_SIZE: int = 5
