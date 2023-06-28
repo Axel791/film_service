@@ -16,9 +16,11 @@ from elasticsearch import AsyncElasticsearch
 from tests.settings import test_settings
 
 
-def generate_film(film_id: str | None = None,
-                  imdb_rating: float = 8.5,
-                  film_genre: List[str] | None = None) -> dict:
+def generate_film(
+        film_id: str | None = None,
+        imdb_rating: float = 8.5,
+        film_genre: List[str] | None = None
+) -> dict:
     film = {
         'id': str(uuid.uuid4()) if film_id is None else film_id,
         'imdb_rating': imdb_rating,
@@ -41,6 +43,29 @@ def generate_film(film_id: str | None = None,
         'film_work_type': 'movie'
     }
     return film
+
+
+def generate_persons(
+        person_id: str | None = None,
+        film: dict | None = None
+) -> dict:
+    person = {
+        'id': str(uuid.uuid4()) if person_id is None else person_id,
+        'full_name': 'Ann',
+        'films': [film] if film is not None else [generate_film(film_id=str(uuid.uuid4()))]
+    }
+    return person
+
+
+def generate_genres(genre_id: str | None = None) -> dict:
+    genre = {
+        'id': str(uuid.uuid4()) if genre_id is None else genre_id,
+        'name': 'Sci-Fi',
+        'description': 'Science fiction is a genre of speculative fiction,'
+                       ' which typically deals with imaginative and'
+                       ' futuristic concepts such as advanced science and technology'
+    }
+    return genre
 
 
 def get_es_bulk_query(es_data: List[dict], es_index: str, es_id_field: str) -> List[str]:
