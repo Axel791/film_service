@@ -3,7 +3,7 @@ import json
 
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
-
+from typing import Optional
 from typing import List
 from functools import lru_cache
 
@@ -12,7 +12,7 @@ from app.db.init_es import get_elastic
 
 
 from app.schemas.persons import Person
-from app.schemas.films import FilmWorkShort
+from app.schemas.films import FilmWorkShort, FilmWork
 
 from .base import SearchService
 from .cacheble_service import CacheableService, get_cacheable_service
@@ -94,8 +94,10 @@ class PersonService(SearchService):
                     }
                 }
             ]
+
         key = json.dumps(body)
         films = await self._cacheable.get_obj_from_cache(key=key, schema=FilmWorkShort)
+
         if films is None:
             films = await self.get_objects_from_etl(
                 key=key,

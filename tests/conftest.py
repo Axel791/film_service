@@ -70,7 +70,7 @@ def es_write_data():
         await client.close()
         if response['errors']:
             raise Exception('Ошибка записи данных в Elasticsearch')
-
+            
 
 @pytest_asyncio.fixture(scope='session')
 def event_loop():
@@ -138,21 +138,4 @@ def make_get_request(http_session: aiohttp.ClientSession):
             if status in range(200, 400):
                 body = await response.json()
         return {'body': body, 'status': status}
-    return inner
-
-
-@pytest.fixture
-async def make_get_request():
-    async def inner(url: str, params: dict):
-        session = aiohttp.ClientSession()
-
-        try:
-            async with session.get(url, params=params) as response:
-                data = await response.json()
-                status = response.status
-        finally:
-            await session.close()
-
-        return data, status
-
     return inner
