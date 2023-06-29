@@ -42,3 +42,5 @@ def get_genre_service(
         storage: AbstractStorage = Depends(get_elastic_storage)
 ):
     return GenreService(cache=cache, storage=storage)
+
+
