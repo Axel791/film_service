@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.schemas.genres import Genre
+from app.api.v1.schemas.genres import Genre
 from app.services.genre import get_genre_service, GenreService
 
 router = APIRouter()

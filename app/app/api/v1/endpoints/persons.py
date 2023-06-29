@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends
 from typing import List
 
 from app.core.config import settings
-from app.schemas.persons import Person
-from app.schemas.films import FilmWorkShort
+from app.api.v1.schemas.persons import Person
+from app.api.v1.schemas.films import FilmWorkShort
 from app.services.person import get_person_service, PersonService
 
 router = APIRouter()
