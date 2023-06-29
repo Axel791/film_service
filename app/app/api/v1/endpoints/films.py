@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from typing import List
 
 from app.core.config import settings
-from app.schemas.films import FilmWork, FilmWorkShort
+from app.api.v1.schemas.films import FilmWork, FilmWorkShort
 from app.services.film import get_film_service, FilmWorkService
 
 router = APIRouter()

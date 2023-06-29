@@ -1,42 +1,42 @@
 import json
 
-
-from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
-from typing import Optional
-from typing import List
+from typing import List, Type
 from functools import lru_cache
 
+from fastapi import Depends
+from pydantic import BaseModel
+
+from app.services.cacheble_base import AbstractCache, get_redis_cache
+from app.services.storage_base import AbstractStorage, get_elastic_storage
+
 from app.core.config import settings
-from app.db.init_es import get_elastic
+
+from app.api.v1.schemas.films import FilmWorkShort
+from app.api.v1.schemas.persons import Person
 
 
-from app.schemas.persons import Person
-from app.schemas.films import FilmWorkShort, FilmWork
-
-from .base import SearchService
-from .cacheble_service import CacheableService, get_cacheable_service
-
-
-class PersonService(SearchService):
-
+class PersonService:
     def __init__(
             self,
-            cacheable: CacheableService,
-            es: AsyncElasticsearch
+            cache: AbstractCache,
+            storage: AbstractStorage
     ) -> None:
-        super().__init__(cacheable, es)
+        self.cache = cache
+        self.storage = storage
 
     async def get(self, person_id: str) -> Person:
-        person = await self._cacheable.get_obj_from_cache(key=person_id, schema=Person)
+        person = await self.cache.get(
+            key=person_id,
+            schema=Person
+        )
         if person is None:
-            person = await self.get_obj_from_etl(
-                obj_id=person_id,
+            person = await self.storage.get(
+                obj_id=film_id,
                 index='persons',
                 schema=Person
             )
-            person_str = json.dumps(person.dict())
-            await self._cacheable.put_to_cache(key=person_id, value=person_str)
+            person_str = json.dumps(film.dict())
+            await self.cache.put(key=person_id, value=person_str)
         return person
 
     async def list(
@@ -45,7 +45,7 @@ class PersonService(SearchService):
             rating_order: str | None = None,
             page: int | None = 1,
             page_size: int | None = settings.default_page_size
-    ):
+    ) -> List[FilmWorkShort] | None:
         return await self._get_films_by_person_id(
             person_id=person_id,
             rating_order=rating_order,
@@ -58,7 +58,7 @@ class PersonService(SearchService):
             query: str = "",
             page: int | None = 1,
             page_size: int | None = settings.default_page_size
-    ):
+    ) -> List[Person] | None:
         return await self._search_persons(
             query=query,
             page=page,
@@ -95,24 +95,18 @@ class PersonService(SearchService):
                 }
             ]
 
-        key = json.dumps(body)
-        films = await self._cacheable.get_obj_from_cache(key=key, schema=FilmWorkShort)
-
-        if films is None:
-            films = await self.get_objects_from_etl(
-                key=key,
-                body=body,
-                index='movies',
-                schema=FilmWorkShort,
-            )
-        return films
+        return await self._return_persons(
+            body=body,
+            schema=FilmWorkShort,
+            index='movies'
+        )
 
     async def _search_persons(
             self,
             query: str,
             page: int | None = 1,
             page_size: int | None = settings.default_page_size
-    ):
+    ) -> List[Person] | None:
         start = (page - 1) * page_size
         body = {
             "query": {
@@ -125,21 +119,35 @@ class PersonService(SearchService):
             "from": start,
             "size": page_size
         }
+        return await self._return_persons(
+            body=body,
+            schema=Person,
+            index='persons'
+        )
+
+    async def _return_persons(
+            self,
+            body: dict,
+            index: str,
+            schema: Type[BaseModel]
+    ) -> Type[BaseModel] | None:
         key = json.dumps(body)
-        persons = await self._cacheable.get_list_from_cache(key=key, schema=Person)
+        persons = await self.cache.list(key=key, schema=schema)
         if persons is None:
-            persons = await self.get_objects_from_etl(
-                body=body,
+            persons = await self.storage.list(
                 key=key,
-                index='persons',
-                schema=Person
+                body=body,
+                schema=schema,
+                insex=index
             )
+            persons_str = json.dumps([film.dict() for film in films])
+            await self.cache.put(key=key, value=persons_str)
         return persons
 
 
 @lru_cache()
-def get_person_service(
-        cacheable: CacheableService = Depends(get_cacheable_service),
-        es: AsyncElasticsearch = Depends(get_elastic)
-) -> PersonService:
-    return PersonService(cacheable=cacheable, es=es)
+def get_film_service(
+        cache: AbstractCache = Depends(get_redis_cache),
+        storage: AbstractStorage = Depends(get_elastic_storage)
+):
+    return PersonService(cache=cache, storage=storage)

@@ -2,36 +2,34 @@ import json
 
 from functools import lru_cache
 
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from .base import SearchService
-from .cacheble_service import CacheableService, get_cacheable_service
+from app.services.cacheble_base import AbstractCache, get_redis_cache
+from app.services.storage_base import AbstractStorage, get_elastic_storage
 
-from app.db.init_es import get_elastic
-
-from app.schemas.genres import Genre
+from app.api.v1.schemas.genres import Genre
 
 
-class GenreService(SearchService):
+class GenreService:
 
     def __init__(
             self,
-            cacheable: CacheableService,
-            es: AsyncElasticsearch
+            cache: AbstractCache,
+            storage: AbstractStorage
     ) -> None:
-        super().__init__(cacheable, es)
+        self.cache = cache
+        self.storage = storage
 
-    async def get(self, genre_id: str):
-        genre = self._cacheable.get_obj_from_cache(key=genre_id, schema=Genre)
+    async def get(self, genre_id: str) -> Genre:
+        genre = await self.cache.get(key=genre_id, schema=Genre)
         if genre is None:
-            genre = await self.get_obj_from_etl(
+            genre = await self.storage.get(
                 obj_id=genre_id,
                 index='genres',
                 schema=Genre
             )
             genre_str = json.dumps(genre.dict())
-            await self._cacheable.put_to_cache(
+            await self.cache.put(
                 key=genre_id,
                 value=genre_str
             )
@@ -40,7 +38,7 @@ class GenreService(SearchService):
 
 @lru_cache()
 def get_genre_service(
-    cacheable: CacheableService = Depends(get_cacheable_service),
-    es: AsyncElasticsearch = Depends(get_elastic)
-) -> GenreService:
-    return GenreService(cacheable=cacheable, es=es)
+        cache: AbstractCache = Depends(get_redis_cache),
+        storage: AbstractStorage = Depends(get_elastic_storage)
+):
+    return GenreService(cache=cache, storage=storage)
