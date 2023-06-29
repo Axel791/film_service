@@ -7,7 +7,7 @@ class PaginateQueryParams:
 
     def __init__(
         self,
-        page_number: int = Query(
+        page: int = Query(
             1,
             title="Page number",
             description="Page number to return",
@@ -21,5 +21,5 @@ class PaginateQueryParams:
             le=500,
         ),
     ):
-        self.page_number = page_number
+        self.page = page
         self.page_size = page_size
