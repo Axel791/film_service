@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from typing import List
+from typing import List, Annotated
 
 from app.core.commons import PaginateQueryParams
 from app.core.config import settings
