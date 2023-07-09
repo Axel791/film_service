@@ -17,7 +17,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: content; Type: SCHEMA; Schema: -; Owner: app
+-- Name: content; Type: SCHEMA; Schema: -; Owner: auth
 --
 
 CREATE SCHEMA content;
@@ -26,7 +26,7 @@ CREATE SCHEMA content;
 ALTER SCHEMA content OWNER TO app;
 
 --
--- Name: type_movie; Type: TYPE; Schema: public; Owner: app
+-- Name: type_movie; Type: TYPE; Schema: public; Owner: auth
 --
 
 CREATE TYPE public.type_movie AS ENUM (
@@ -42,7 +42,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: film_work; Type: TABLE; Schema: content; Owner: app
+-- Name: film_work; Type: TABLE; Schema: content; Owner: auth
 --
 
 CREATE TABLE content.film_work (
@@ -60,7 +60,7 @@ CREATE TABLE content.film_work (
 ALTER TABLE content.film_work OWNER TO app;
 
 --
--- Name: genre; Type: TABLE; Schema: content; Owner: app
+-- Name: genre; Type: TABLE; Schema: content; Owner: auth
 --
 
 CREATE TABLE content.genre (
@@ -75,7 +75,7 @@ CREATE TABLE content.genre (
 ALTER TABLE content.genre OWNER TO app;
 
 --
--- Name: genre_film_work; Type: TABLE; Schema: content; Owner: app
+-- Name: genre_film_work; Type: TABLE; Schema: content; Owner: auth
 --
 
 CREATE TABLE content.genre_film_work (
@@ -89,7 +89,7 @@ CREATE TABLE content.genre_film_work (
 ALTER TABLE content.genre_film_work OWNER TO app;
 
 --
--- Name: person; Type: TABLE; Schema: content; Owner: app
+-- Name: person; Type: TABLE; Schema: content; Owner: auth
 --
 
 CREATE TABLE content.person (
@@ -103,7 +103,7 @@ CREATE TABLE content.person (
 ALTER TABLE content.person OWNER TO app;
 
 --
--- Name: person_film_work; Type: TABLE; Schema: content; Owner: app
+-- Name: person_film_work; Type: TABLE; Schema: content; Owner: auth
 --
 
 CREATE TABLE content.person_film_work (
@@ -118,7 +118,7 @@ CREATE TABLE content.person_film_work (
 ALTER TABLE content.person_film_work OWNER TO app;
 
 --
--- Name: auth_group; Type: TABLE; Schema: public; Owner: app
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.auth_group (
@@ -130,7 +130,7 @@ CREATE TABLE public.auth_group (
 ALTER TABLE public.auth_group OWNER TO app;
 
 --
--- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.auth_group_id_seq
@@ -145,14 +145,14 @@ CREATE SEQUENCE public.auth_group_id_seq
 ALTER TABLE public.auth_group_id_seq OWNER TO app;
 
 --
--- Name: auth_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: auth_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.auth_group_id_seq OWNED BY public.auth_group.id;
 
 
 --
--- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: app
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.auth_group_permissions (
@@ -165,7 +165,7 @@ CREATE TABLE public.auth_group_permissions (
 ALTER TABLE public.auth_group_permissions OWNER TO app;
 
 --
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.auth_group_permissions_id_seq
@@ -179,14 +179,14 @@ CREATE SEQUENCE public.auth_group_permissions_id_seq
 ALTER TABLE public.auth_group_permissions_id_seq OWNER TO app;
 
 --
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.auth_group_permissions_id_seq OWNED BY public.auth_group_permissions.id;
 
 
 --
--- Name: auth_permission; Type: TABLE; Schema: public; Owner: app
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.auth_permission (
@@ -200,7 +200,7 @@ CREATE TABLE public.auth_permission (
 ALTER TABLE public.auth_permission OWNER TO app;
 
 --
--- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.auth_permission_id_seq
@@ -215,14 +215,14 @@ CREATE SEQUENCE public.auth_permission_id_seq
 ALTER TABLE public.auth_permission_id_seq OWNER TO app;
 
 --
--- Name: auth_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: auth_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.auth_permission_id_seq OWNED BY public.auth_permission.id;
 
 
 --
--- Name: auth_user; Type: TABLE; Schema: public; Owner: app
+-- Name: auth_user; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.auth_user (
@@ -243,7 +243,7 @@ CREATE TABLE public.auth_user (
 ALTER TABLE public.auth_user OWNER TO app;
 
 --
--- Name: auth_user_groups; Type: TABLE; Schema: public; Owner: app
+-- Name: auth_user_groups; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.auth_user_groups (
@@ -256,7 +256,7 @@ CREATE TABLE public.auth_user_groups (
 ALTER TABLE public.auth_user_groups OWNER TO app;
 
 --
--- Name: auth_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: auth_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.auth_user_groups_id_seq
@@ -270,14 +270,14 @@ CREATE SEQUENCE public.auth_user_groups_id_seq
 ALTER TABLE public.auth_user_groups_id_seq OWNER TO app;
 
 --
--- Name: auth_user_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: auth_user_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.auth_user_groups_id_seq OWNED BY public.auth_user_groups.id;
 
 
 --
--- Name: auth_user_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: auth_user_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.auth_user_id_seq
@@ -292,14 +292,14 @@ CREATE SEQUENCE public.auth_user_id_seq
 ALTER TABLE public.auth_user_id_seq OWNER TO app;
 
 --
--- Name: auth_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: auth_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.auth_user_id_seq OWNED BY public.auth_user.id;
 
 
 --
--- Name: auth_user_user_permissions; Type: TABLE; Schema: public; Owner: app
+-- Name: auth_user_user_permissions; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.auth_user_user_permissions (
@@ -312,7 +312,7 @@ CREATE TABLE public.auth_user_user_permissions (
 ALTER TABLE public.auth_user_user_permissions OWNER TO app;
 
 --
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.auth_user_user_permissions_id_seq
@@ -326,14 +326,14 @@ CREATE SEQUENCE public.auth_user_user_permissions_id_seq
 ALTER TABLE public.auth_user_user_permissions_id_seq OWNER TO app;
 
 --
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.auth_user_user_permissions_id_seq OWNED BY public.auth_user_user_permissions.id;
 
 
 --
--- Name: django_admin_log; Type: TABLE; Schema: public; Owner: app
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.django_admin_log (
@@ -352,7 +352,7 @@ CREATE TABLE public.django_admin_log (
 ALTER TABLE public.django_admin_log OWNER TO app;
 
 --
--- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.django_admin_log_id_seq
@@ -367,14 +367,14 @@ CREATE SEQUENCE public.django_admin_log_id_seq
 ALTER TABLE public.django_admin_log_id_seq OWNER TO app;
 
 --
--- Name: django_admin_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: django_admin_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.django_admin_log_id_seq OWNED BY public.django_admin_log.id;
 
 
 --
--- Name: django_content_type; Type: TABLE; Schema: public; Owner: app
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.django_content_type (
@@ -387,7 +387,7 @@ CREATE TABLE public.django_content_type (
 ALTER TABLE public.django_content_type OWNER TO app;
 
 --
--- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.django_content_type_id_seq
@@ -402,14 +402,14 @@ CREATE SEQUENCE public.django_content_type_id_seq
 ALTER TABLE public.django_content_type_id_seq OWNER TO app;
 
 --
--- Name: django_content_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: django_content_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.django_content_type_id_seq OWNED BY public.django_content_type.id;
 
 
 --
--- Name: django_migrations; Type: TABLE; Schema: public; Owner: app
+-- Name: django_migrations; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.django_migrations (
@@ -423,7 +423,7 @@ CREATE TABLE public.django_migrations (
 ALTER TABLE public.django_migrations OWNER TO app;
 
 --
--- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: auth
 --
 
 CREATE SEQUENCE public.django_migrations_id_seq
@@ -437,14 +437,14 @@ CREATE SEQUENCE public.django_migrations_id_seq
 ALTER TABLE public.django_migrations_id_seq OWNER TO app;
 
 --
--- Name: django_migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: app
+-- Name: django_migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: auth
 --
 
 ALTER SEQUENCE public.django_migrations_id_seq OWNED BY public.django_migrations.id;
 
 
 --
--- Name: django_session; Type: TABLE; Schema: public; Owner: app
+-- Name: django_session; Type: TABLE; Schema: public; Owner: auth
 --
 
 CREATE TABLE public.django_session (
@@ -457,70 +457,70 @@ CREATE TABLE public.django_session (
 ALTER TABLE public.django_session OWNER TO app;
 
 --
--- Name: auth_group id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: auth_group id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.auth_group ALTER COLUMN id SET DEFAULT nextval('public.auth_group_id_seq'::regclass);
 
 
 --
--- Name: auth_group_permissions id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: auth_group_permissions id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.auth_group_permissions ALTER COLUMN id SET DEFAULT nextval('public.auth_group_permissions_id_seq'::regclass);
 
 
 --
--- Name: auth_permission id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: auth_permission id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.auth_permission ALTER COLUMN id SET DEFAULT nextval('public.auth_permission_id_seq'::regclass);
 
 
 --
--- Name: auth_user id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: auth_user id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.auth_user ALTER COLUMN id SET DEFAULT nextval('public.auth_user_id_seq'::regclass);
 
 
 --
--- Name: auth_user_groups id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: auth_user_groups id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.auth_user_groups ALTER COLUMN id SET DEFAULT nextval('public.auth_user_groups_id_seq'::regclass);
 
 
 --
--- Name: auth_user_user_permissions id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: auth_user_user_permissions id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.auth_user_user_permissions ALTER COLUMN id SET DEFAULT nextval('public.auth_user_user_permissions_id_seq'::regclass);
 
 
 --
--- Name: django_admin_log id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: django_admin_log id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.django_admin_log ALTER COLUMN id SET DEFAULT nextval('public.django_admin_log_id_seq'::regclass);
 
 
 --
--- Name: django_content_type id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: django_content_type id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.django_content_type ALTER COLUMN id SET DEFAULT nextval('public.django_content_type_id_seq'::regclass);
 
 
 --
--- Name: django_migrations id; Type: DEFAULT; Schema: public; Owner: app
+-- Name: django_migrations id; Type: DEFAULT; Schema: public; Owner: auth
 --
 
 ALTER TABLE ONLY public.django_migrations ALTER COLUMN id SET DEFAULT nextval('public.django_migrations_id_seq'::regclass);
 
 
 --
--- Data for Name: film_work; Type: TABLE DATA; Schema: content; Owner: app
+-- Data for Name: film_work; Type: TABLE DATA; Schema: content; Owner: auth
 --
 
 COPY content.film_work (created, modified, id, title, description, creation_date, rating, type) FROM stdin;
@@ -1527,7 +1527,7 @@ COPY content.film_work (created, modified, id, title, description, creation_date
 
 
 --
--- Data for Name: genre; Type: TABLE DATA; Schema: content; Owner: app
+-- Data for Name: genre; Type: TABLE DATA; Schema: content; Owner: auth
 --
 
 COPY content.genre (created, modified, id, name, description) FROM stdin;
@@ -1561,7 +1561,7 @@ COPY content.genre (created, modified, id, name, description) FROM stdin;
 
 
 --
--- Data for Name: genre_film_work; Type: TABLE DATA; Schema: content; Owner: app
+-- Data for Name: genre_film_work; Type: TABLE DATA; Schema: content; Owner: auth
 --
 
 COPY content.genre_film_work (created, id, film_work_id, genre_id) FROM stdin;
@@ -3800,7 +3800,7 @@ COPY content.genre_film_work (created, id, film_work_id, genre_id) FROM stdin;
 
 
 --
--- Data for Name: person; Type: TABLE DATA; Schema: content; Owner: app
+-- Data for Name: person; Type: TABLE DATA; Schema: content; Owner: auth
 --
 
 COPY content.person (created, modified, id, full_name) FROM stdin;
@@ -7974,7 +7974,7 @@ COPY content.person (created, modified, id, full_name) FROM stdin;
 
 
 --
--- Data for Name: person_film_work; Type: TABLE DATA; Schema: content; Owner: app
+-- Data for Name: person_film_work; Type: TABLE DATA; Schema: content; Owner: auth
 --
 
 COPY content.person_film_work (created, id, role, film_work_id, person_id) FROM stdin;
@@ -13765,7 +13765,7 @@ COPY content.person_film_work (created, id, role, film_work_id, person_id) FROM 
 
 
 --
--- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.auth_group (id, name) FROM stdin;
@@ -13773,7 +13773,7 @@ COPY public.auth_group (id, name) FROM stdin;
 
 
 --
--- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.auth_group_permissions (id, group_id, permission_id) FROM stdin;
@@ -13781,7 +13781,7 @@ COPY public.auth_group_permissions (id, group_id, permission_id) FROM stdin;
 
 
 --
--- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
@@ -13833,7 +13833,7 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 
 
 --
--- Data for Name: auth_user; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: auth_user; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.auth_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined) FROM stdin;
@@ -13841,7 +13841,7 @@ COPY public.auth_user (id, password, last_login, is_superuser, username, first_n
 
 
 --
--- Data for Name: auth_user_groups; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: auth_user_groups; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.auth_user_groups (id, user_id, group_id) FROM stdin;
@@ -13849,7 +13849,7 @@ COPY public.auth_user_groups (id, user_id, group_id) FROM stdin;
 
 
 --
--- Data for Name: auth_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: auth_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
@@ -13857,7 +13857,7 @@ COPY public.auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
 
 
 --
--- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
@@ -13865,7 +13865,7 @@ COPY public.django_admin_log (id, action_time, object_id, object_repr, action_fl
 
 
 --
--- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.django_content_type (id, app_label, model) FROM stdin;
@@ -13884,10 +13884,10 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 
 
 --
--- Data for Name: django_migrations; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: django_migrations; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
-COPY public.django_migrations (id, app, name, applied) FROM stdin;
+COPY public.django_migrations (id, auth, name, applied) FROM stdin;
 1	contenttypes	0001_initial	2023-05-13 15:27:54.185433+00
 2	auth	0001_initial	2023-05-13 15:27:54.287287+00
 3	admin	0001_initial	2023-05-13 15:27:54.312337+00
@@ -13911,7 +13911,7 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 
 
 --
--- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: app
+-- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: auth
 --
 
 COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
@@ -13919,63 +13919,63 @@ COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
 
 
 --
--- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.auth_group_id_seq', 1, false);
 
 
 --
--- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
 
 
 --
--- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.auth_permission_id_seq', 44, true);
 
 
 --
--- Name: auth_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: auth_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.auth_user_groups_id_seq', 1, false);
 
 
 --
--- Name: auth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: auth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.auth_user_id_seq', 1, false);
 
 
 --
--- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.auth_user_user_permissions_id_seq', 1, false);
 
 
 --
--- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.django_admin_log_id_seq', 1, false);
 
 
 --
--- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.django_content_type_id_seq', 11, true);
 
 
 --
--- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: app
+-- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: auth
 --
 
 SELECT pg_catalog.setval('public.django_migrations_id_seq', 19, true);

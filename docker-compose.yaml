@@ -60,7 +60,22 @@ services:
     expose:
       - 80
     volumes:
-      - ./app:/opt/app:rw
+      - ./auth:/opt/auth:rw
+    restart: always
+    networks:
+      - internal
+
+  auth:
+    container_name: ${PROJECT_SLUG}_auth
+    build:
+      context: ./auth
+      dockerfile: auth.dockerfile
+    env_file:
+      - .env
+    expose:
+      - 80
+    volumes:
+      - ./auth:/opt/auth:rw
     restart: always
     networks:
       - internal
