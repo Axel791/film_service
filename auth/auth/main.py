@@ -8,12 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI
 
+from redis import Redis
+
 from pathlib import Path
 
 
 def create_app():
     container = Container()
     container.wire(modules=[deps,])
+
     fastapi_app = FastAPI(
         title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
     )
@@ -34,6 +37,8 @@ def create_app():
     # fastapi_app.mount("/image", StaticFiles(directory=static_root_absolute), name="image")
 
     fastapi_app.include_router(api.api_router, prefix=settings.API_V1_STR)
+
+
     return fastapi_app
 
 
