@@ -93,6 +93,6 @@ class AuthService:
         access_token = self.create_access_token(user=user)
         logger.info(refresh_token)
 
-        return {"refresh_token": refresh_token, "token_type": "bearer"}
+        return {"token": refresh_token, "token_type": "bearer"}
 
 
