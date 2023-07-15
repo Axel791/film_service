@@ -30,8 +30,9 @@ async def registration(
 
 @router.post('/refresh', response_model=Token)
 @inject
-def refresh(
+async def refresh(
         access_token: Token,
+        redis=Depends(Provide[Container.redis]),
         auth_service=Depends(Provide[Container.auth_service])
 ):
-    return await auth_service.refresh_access_token(access_token)
+    return await auth_service.refresh_access_token(redis, access_token)

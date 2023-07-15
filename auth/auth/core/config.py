@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, PostgresDsn, validator
+from pydantic_settings import BaseSettings
+from pydantic import PostgresDsn, field_validator
 
 from typing import Any, Dict
 
@@ -13,16 +14,19 @@ class Settings(BaseSettings):
     db_host: str
     db_port: str
 
-    async_sqlalchemy_database_uri: PostgresDsn | None = None
-    sync_sqlalchemy_database_uri: PostgresDsn | None = None
+    REDIS_PORT: str
+    REDIS_HOST: str
 
-    ACCESS_TOKEN_EXPIRE_MINS: int
-    REFRESH_TOKEN_EXPIRE_MINS: int
+    ASYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
+    SYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
+
+    ACCESS_TOKEN_EXPIRE: int
+    REFRESH_TOKEN_EXPIRE: int
     JWT_SECRET_KEY: str
     JWT_REFRESH_SECRET_KEY: str
     ALGORITHM: str
 
-    @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
+    @field_validator("ASYNC_SQLALCHEMY_DATABASE_URI")
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v
@@ -35,7 +39,7 @@ class Settings(BaseSettings):
             path=f"/{values.get('db_name') or ''}",
         )
 
-    @validator("SYNC_SQLALCHEMY_DATABASE_URI", pre=True)
+    @field_validator("SYNC_SQLALCHEMY_DATABASE_URI")
     def assemble_sync_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
             return v

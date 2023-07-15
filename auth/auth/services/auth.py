@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 from jose import jwt
 from loguru import logger
+from redis.asyncio import Redis
 
 from passlib.context import CryptContext
 from auth.models.entity import User
@@ -51,7 +52,7 @@ class AuthService:
     def verify_password(self, input_password, hashed_password):
         return pwd_context.verify(input_password, hashed_password)
 
-    async def registration(self, user: RegUserIn):
+    async def registration(self, redis: Redis, user: RegUserIn):
         user_login = self._repository_user.get(login=user.login)
         user_email = self._repository_user.get(email=user.email)
         if user_email is not None:
@@ -95,7 +96,7 @@ class AuthService:
 
         return {"token": refresh_token, "token_type": "bearer"}
 
-    def refresh_access_token(self, access_token: Token) -> Token:
+    async def refresh_access_token(self, redis: Redis, access_token: Token) -> Token:
         try:
             decoded_token = jwt.decode(access_token.token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
         except jwt.JWTError:
@@ -114,7 +115,6 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-
         user = self._repository_user.get(login=user_login)
         refresh_token = jwt.decode(user.token, self.REFRESH_SECRET_KEY, algorithms=[self.ALGORITHM])
 
@@ -122,5 +122,6 @@ class AuthService:
             new_access_token = self.create_access_token(user)
             redis.set(user_login, new_access_token)
         else:
-            #перенаправить пользователя на логин опять
-            return new_access_token
+            print("access token is fine")
+            # перенаправить пользователя на логин опять
+        return new_access_token
