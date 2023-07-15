@@ -3,6 +3,7 @@ redis_client = Redis(host='localhost', port=6379, password='your_redis_password'
 auth_service = AuthService(db, redis_client)
 
 
+
 @router.post("/register", response_model=UserInDB)
 def register(user_data: UserCreate) -> UserInDB:
     user = auth_service.create_user(user_data)
@@ -19,10 +20,6 @@ def login(username: str, password: str) -> Token:
 
     return access_token
 
-
-@router.get("/protected")
-def protected_route(current_user: UserInDB = Depends(auth_service.verify_access_token)):
-    return {"message": "Protected Route"}
 
 
 @router.post("/refresh-token", response_model=Token)
