@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, Column, Integer, DateTime, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 
 
-from db.base import Base
+from db.base_class import Base
 
 
 class User(Base):
