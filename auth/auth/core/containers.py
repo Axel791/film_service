@@ -11,3 +11,5 @@ class Container(containers.DeclarativeContainer):
     config = providers.Singleton(Settings)
 
     db = providers.Singleton(SyncSession, db_url=config.provided.sync_sqlalchemy_database_uri)
+
+

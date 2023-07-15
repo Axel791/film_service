@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 
 class Settings(BaseSettings):
-    project_slug: str
+    PROJECT_SLUG: str
     api_v1_str: str
 
     db_name: str
@@ -16,11 +16,11 @@ class Settings(BaseSettings):
     async_sqlalchemy_database_uri: PostgresDsn | None = None
     sync_sqlalchemy_database_uri: PostgresDsn | None = None
 
-    access_token_expire_minutes: int
-    refresh_token_expire_minutes: int
-    jwt_secret_key: str
-    jwt_refresh_secret_key: str
-    algorithm: str
+    ACCESS_TOKEN_EXPIRE_MINS: int
+    REFRESH_TOKEN_EXPIRE_MINS: int
+    JWT_SECRET_KEY: str
+    JWT_REFRESH_SECRET_KEY: str
+    ALGORITHM: str
 
     @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:

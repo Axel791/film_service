@@ -1,13 +1,13 @@
 from uuid import UUID
-
+import datetime
 from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
     login: str
     password: str
-    first_name: str
-    last_name: str
+    email: str
+
 
 
 class UserInDB(BaseModel):
@@ -17,3 +17,8 @@ class UserInDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    token: str
+    expiry: datetime.datetime

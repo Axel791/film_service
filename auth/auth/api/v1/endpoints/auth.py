@@ -1,33 +1,53 @@
-db = SessionLocal()
-redis_client = Redis(host='localhost', port=6379, password='your_redis_password')
-auth_service = AuthService(db, redis_client)
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
+
+from auth.api.deps import commit_and_close_session, get_current_user
+from dependency_injector.wiring import inject, Provide
+from auth.core.containers import Container
+from auth.schemas.auth import Token, UserInDB
 
 
-
-@router.post("/register", response_model=UserInDB)
-def register(user_data: UserCreate) -> UserInDB:
-    user = auth_service.create_user(user_data)
-    return user
+router = APIRouter()
 
 
-@router.post("/login", response_model=Token)
-def login(username: str, password: str) -> Token:
-    user = auth_service.authenticate_user(username, password)
-    access_token = auth_service.create_access_token(user)
-
-    # Store the access token in Redis
-    redis_client.set(username, access_token.access_token)
-
-    return access_token
+@router.post('/login', response_model=Token)
+@inject
+async def login(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        auth_service=Depends(Provide[Container.auth_service])
+):
+    return await auth_service.login(form_data=form_data)
 
 
+@router.post('/registration')
+@inject
+@commit_and_close_session
+async def registration(
+        user: RegUserIn,
+        auth_service=Depends(Provide[Container.auth_service])
+):
+    return await auth_service.registration(user=user)
 
-@router.post("/refresh-token", response_model=Token)
-def refresh_token(refresh_token: str) -> Token:
-    user = auth_service.verify_refresh_token(refresh_token)
-    access_token = auth_service.create_access_token(user)
 
-    # Store the new access token in Redis
-    redis_client.set(user.username, access_token.access_token)
+@router.post('/profile', response_model=MyProfileOut)
+@inject
+async def my_profile(
+    #! Сюда нужно вставить функцию получения айди по тому какой пользователь обращается
+        # user_id: str = Depends(get_current_user_auth),
+        registration_service=Depends(Provide[Container.registration_service])):
+    """Личный кабинет."""
+    return registration_service.my_profile(user_id="ID")
 
-    return access_token
+
+@router.post
+@inject
+async def get_post():
+    return {"Hello world": "Hello world!"}
+
+
+@router.app
+@inject
+async def get_user(user=Depends(get_current_user)):
+    if get_current_user is None:
+        raise ValueError("Нет нужного пользователя.")
+    return get_current_user.id
