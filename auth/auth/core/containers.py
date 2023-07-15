@@ -5,6 +5,7 @@ from dependency_injector import containers, providers
 
 from auth.core.config import Settings
 from auth.db.session import SyncSession
+from auth.db.init_redis import redis
 
 
 class Container(containers.DeclarativeContainer):

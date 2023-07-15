@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from auth.models.entity import User
 
 from auth.core.config import settings
-from auth.schemas.auth import RegUserIn
+from auth.schemas.auth import RegUserIn, Token
 from auth.repository.base import RepositoryBase
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -40,7 +40,7 @@ class AuthService:
         expiry = datetime.utcnow() + timedelta(mins=self.REFRESH_TOKEN_EXPIRE_MINS)
         payload = {
             "login": user.login,
-            "exp": expiry,
+            "exp": expiry
         }
         refresh_token = jwt.encode(payload, self.REFRESH_SECRET_KEY, algorithm=self.ALGORITHM)
         return refresh_token
@@ -76,16 +76,16 @@ class AuthService:
 
     async def login(self, form_data):
         credentials_exception = HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
         user = self._repository_user.get(email=form_data.username)
         if not user:
             raise credentials_exception
         if not self.verify_password(
-            input_password=form_data.password,
-            hashed_password=user.password
+                input_password=form_data.password,
+                hashed_password=user.password
         ):
             raise credentials_exception
 
@@ -95,4 +95,32 @@ class AuthService:
 
         return {"token": refresh_token, "token_type": "bearer"}
 
+    def refresh_access_token(self, access_token: Token) -> Token:
+        try:
+            decoded_token = jwt.decode(access_token.token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+        except jwt.JWTError:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
+        user_login = decoded_token.login
+        stored_access_token = redis.get(user_login)
+        if stored_access_token != access_token:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid access token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+
+        user = self._repository_user.get(login=user_login)
+        refresh_token = jwt.decode(user.token, self.REFRESH_SECRET_KEY, algorithms=[self.ALGORITHM])
+
+        if refresh_token.exp > datetime.utcnow():
+            new_access_token = self.create_access_token(user)
+            redis.set(user_login, new_access_token)
+        else:
+            #перенаправить пользователя на логин опять
+            return new_access_token

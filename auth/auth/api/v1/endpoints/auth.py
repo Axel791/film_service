@@ -6,7 +6,6 @@ from dependency_injector.wiring import inject, Provide
 from auth.core.containers import Container
 from auth.schemas.auth import Token, RegUserIn
 
-
 router = APIRouter()
 
 
@@ -28,10 +27,11 @@ async def registration(
 ):
     return await auth_service.registration(user=user)
 
-@router.post('/refresh')
+
+@router.post('/refresh', response_model=Token)
 @inject
-async def refresh(
+def refresh(
         access_token: Token,
         auth_service=Depends(Provide[Container.auth_service])
 ):
-    return await auth_service.registration(user=user)
+    return await auth_service.refresh_access_token(access_token)
