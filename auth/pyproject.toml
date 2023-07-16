@@ -6,9 +6,14 @@ authors = ["Axel791 <HS.Kazakov@mail.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
+
 python = "^3.10"
 fastapi = "^0.100.0"
+passlib = "^1.7.4"
 pydantic = "^2.0.2"
+pydantic-settings = "^2.0.2"
+python-jose = "^3.3.0"
+redis = "^4.5.5"
 uvicorn = "^0.22.0"
 loguru = "^0.7.0"
 sqlalchemy = "^2.0.18"
