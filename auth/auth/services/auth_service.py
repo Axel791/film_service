@@ -9,7 +9,8 @@ from passlib.context import CryptContext
 from auth.models.entity import User
 
 from auth.core.config import settings
-from auth.schemas.auth import RegUserIn, Token
+from auth.schemas.user import RegUserIn
+from auth.schemas.token import Token
 from auth.repository.base import RepositoryBase
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

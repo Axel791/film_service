@@ -4,7 +4,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from auth.api.deps import commit_and_close_session
 from dependency_injector.wiring import inject, Provide
 from auth.core.containers import Container
-from auth.schemas.auth import Token, RegUserIn
+from auth.schemas.user import RegUserIn
+from auth.schemas.token import Token
 
 router = APIRouter()
 

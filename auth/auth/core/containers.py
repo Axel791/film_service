@@ -7,7 +7,7 @@ from auth.core.config import Settings
 from auth.db.session import SyncSession
 from auth.db import init_redis
 
-from auth.services.auth import AuthService
+from auth.services.auth_service import AuthService
 
 
 class Container(containers.DeclarativeContainer):
