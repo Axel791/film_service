@@ -14,7 +14,7 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
-ENV APP_MODULE="auth.main:auth"
+ENV APP_MODULE="auth.main:app"
 ENV PYTHONPATH=/opt/auth
 
 CMD ["/start-reload.sh"]
