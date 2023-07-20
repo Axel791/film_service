@@ -3,20 +3,20 @@ version: '3.8'
 
 services:
 
-  nginx:
-    build: ./nginx
-    container_name: ${PROJECT_SLUG}_nginx
-    volumes:
-      - static_dir:/opt/admin/static/
-      - media_dir:/opt/admin/media/
-    ports:
-      - "80:80"
-      - "81:81"
-    depends_on:
-      - api
-      - admin
-    networks:
-      - internal
+#  nginx:
+#    build: ./nginx
+#    container_name: ${PROJECT_SLUG}_nginx
+#    volumes:
+#      - static_dir:/opt/admin/static/
+#      - media_dir:/opt/admin/media/
+#    ports:
+#      - "80:80"
+#      - "81:81"
+#    depends_on:
+#      - api
+#      - admin
+#    networks:
+#      - internal
 
   db:
     image: postgres:latest
@@ -73,7 +73,7 @@ services:
     env_file:
       - .env
     expose:
-      - 80
+      - 82
     volumes:
       - ./auth:/opt/auth:rw
     restart: always
@@ -85,35 +85,35 @@ services:
     networks:
       - internal
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
-    environment:
-      - "discovery.type=single-node"
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      internal:
-        aliases:
-          - elasticsearch
-
-  app:
-    container_name: ${PROJECT_SLUG}_etl
-    build:
-      context: ./etl
-      dockerfile: etl.dockerfile
-    depends_on:
-      - db
-      - elasticsearch
-    volumes:
-      - ./etl:/opt/etl:rw
-    env_file:
-      - .env
-    networks:
-      - internal
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+#    environment:
+#      - "discovery.type=single-node"
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#    ports:
+#      - '9200:9200'
+#      - '9300:9300'
+#    volumes:
+#      - elasticsearch_data:/usr/share/elasticsearch/data
+#    networks:
+#      internal:
+#        aliases:
+#          - elasticsearch
+#
+#  app:
+#    container_name: ${PROJECT_SLUG}_etl
+#    build:
+#      context: ./etl
+#      dockerfile: etl.dockerfile
+#    depends_on:
+#      - db
+#      - elasticsearch
+#    volumes:
+#      - ./etl:/opt/etl:rw
+#    env_file:
+#      - .env
+#    networks:
+#      - internal
 
 volumes:
   static_dir:

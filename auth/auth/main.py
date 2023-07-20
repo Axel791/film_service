@@ -1,5 +1,6 @@
 from auth.api.v1 import api
 from auth.api import deps
+from auth.api.v1.endpoints import auth
 
 from auth.core.config import settings
 from auth.core.containers import Container
@@ -15,7 +16,7 @@ from pathlib import Path
 
 def create_app():
     container = Container()
-    container.wire(modules=[deps, ])
+    container.wire(modules=[deps, auth])
 
     fastapi_app = FastAPI(
         title=settings.PROJECT_SLUG, openapi_url=f"{settings.API_V1_STR}/openapi.json"

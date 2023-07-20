@@ -11,7 +11,7 @@ from auth.models.entity import User
 from auth.core.config import settings
 from auth.schemas.user import RegUserIn
 from auth.schemas.token import Token
-from auth.repository.base import RepositoryBase
+from auth.repository.user import RepositoryUser
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -25,9 +25,9 @@ class AuthService:
 
     def __init__(
             self,
-            repository: RepositoryBase,
+            repository_user: RepositoryUser,
     ):
-        self._repository_user = repository(User)
+        self._repository_user = repository_user
 
     def create_access_token(self, user: User) -> str:
         expiry = datetime.utcnow() + timedelta(mins=self.ACCESS_TOKEN_EXPIRE_MINS)
