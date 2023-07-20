@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
     )
 
     init_es.es = AsyncElasticsearch(
-        hosts=f'{settings.es_schema}://{settings.es_host}:{settings.es_port}'
+        hosts=f'{settings.etl_schema}://{settings.etl_host}:{settings.etl_port}'
     )
 
     yield

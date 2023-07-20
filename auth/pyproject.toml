@@ -21,6 +21,7 @@ psycopg2-binary = "^2.9.6"
 dependency-injector = "^4.41.0"
 alembic = "^1.11.1"
 asyncpg = "^0.28.0"
+aioredis = "^2.0.1"
 
 
 [build-system]

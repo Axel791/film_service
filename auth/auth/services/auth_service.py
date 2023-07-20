@@ -26,8 +26,10 @@ class AuthService:
     def __init__(
             self,
             repository_user: RepositoryUser,
+            redis: Redis
     ):
         self._repository_user = repository_user
+        self._redis = redis
 
     def create_access_token(self, user: User) -> str:
         expiry = datetime.utcnow() + timedelta(mins=self.ACCESS_TOKEN_EXPIRE_MINS)
@@ -97,7 +99,7 @@ class AuthService:
 
         return {"token": refresh_token, "token_type": "bearer"}
 
-    async def refresh_access_token(self, redis: Redis, access_token: Token) -> Token:
+    async def refresh_access_token(self, access_token: Token) -> Token:
         try:
             decoded_token = jwt.decode(access_token.token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
         except jwt.JWTError:
@@ -108,7 +110,7 @@ class AuthService:
             )
 
         user_login = decoded_token.login
-        stored_access_token = redis.get(user_login)
+        stored_access_token = await self._redis.get(user_login)
         if stored_access_token != access_token:
             raise HTTPException(
                 status_code=401,
@@ -121,7 +123,7 @@ class AuthService:
 
         if refresh_token.exp > datetime.utcnow():
             new_access_token = self.create_access_token(user)
-            redis.set(user_login, new_access_token)
+            await self._redis.set(user_login, new_access_token)
         else:
             print("access token is fine")
             # перенаправить пользователя на логин опять
