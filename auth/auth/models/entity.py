@@ -2,9 +2,9 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy import Column, DateTime, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-
+from sqlalchemy.orm import relationship
 
 from auth.db.base_class import Base
 
@@ -24,3 +24,13 @@ class User(Base):
     password = Column(String(255), nullable=False)
     token = Column(String(255), unique=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    user_role_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("role.id"),
+        nullable=True
+    )
+    role = relationship("Role")
+
+    def __str__(self):
+        return self.login
