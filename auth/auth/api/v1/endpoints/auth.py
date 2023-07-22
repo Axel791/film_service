@@ -6,6 +6,7 @@ from dependency_injector.wiring import inject, Provide
 from auth.core.containers import Container
 from auth.schemas.user import RegUserIn
 from auth.schemas.token import Token
+from auth.schemas.login_event import LoginEvent
 
 router = APIRouter()
 
@@ -37,3 +38,12 @@ async def refresh(
         auth_service=Depends(Provide[Container.auth_service])
 ):
     return await auth_service.refresh_access_token(redis, access_token)
+
+
+@router.post('/get_login_history', response_model=LoginEvent)
+@inject
+async def get_login_history(
+        user_login: str,
+        auth_service=Depends(Provide[Container.auth_service])
+):
+    return await auth_service.get_login_history(user_login)

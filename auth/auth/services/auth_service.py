@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 
 from fastapi import HTTPException, status
 from jose import jwt
@@ -6,12 +7,13 @@ from loguru import logger
 from redis.asyncio import Redis
 
 from passlib.context import CryptContext
-from auth.models.entity import User
 
 from auth.core.config import settings
 from auth.schemas.user import RegUserIn
 from auth.schemas.token import Token
+from auth.schemas.login_event import LoginEvent
 from auth.repository.user import RepositoryUser
+from auth.repository.login_event import RepositoryLoginEvent
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -26,24 +28,26 @@ class AuthService:
     def __init__(
             self,
             repository_user: RepositoryUser,
+            repository_login_event: RepositoryLoginEvent,
             redis: Redis
     ):
         self._repository_user = repository_user
+        self._repository_login_event = repository_login_event
         self._redis = redis
 
-    def create_access_token(self, user: User) -> str:
+    def create_access_token(self, user_login: str) -> str:
         expiry = datetime.utcnow() + timedelta(mins=self.ACCESS_TOKEN_EXPIRE_MINS)
         payload = {
-            "login": user.login,
+            "login": user_login,
             "exp": expiry,
         }
         access_token = jwt.encode(payload, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return access_token
 
-    def create_refresh_token(self, user: User) -> str:
+    def create_refresh_token(self, user_login: str) -> str:
         expiry = datetime.utcnow() + timedelta(mins=self.REFRESH_TOKEN_EXPIRE_MINS)
         payload = {
-            "login": user.login,
+            "login": user_login,
             "exp": expiry
         }
         refresh_token = jwt.encode(payload, self.REFRESH_SECRET_KEY, algorithm=self.ALGORITHM)
@@ -55,7 +59,7 @@ class AuthService:
     def verify_password(self, input_password, hashed_password):
         return pwd_context.verify(input_password, hashed_password)
 
-    async def registration(self, redis: Redis, user: RegUserIn):
+    async def registration(self, user: RegUserIn):
         user_login = self._repository_user.get(login=user.login)
         user_email = self._repository_user.get(email=user.email)
         if user_email is not None:
@@ -64,9 +68,9 @@ class AuthService:
             raise ValueError("Такой логин уже зарегистрирован.")
 
         hashed_password = self._get_password_hash(password=user.password)
-        refresh_token = self.create_refresh_token(user=user)
-        access_token = self.create_access_token(user=user)
-
+        refresh_token = self.create_refresh_token(user_login=user_login)
+        access_token = self.create_access_token(user_login=user_login)
+        self._redis.set(user_login, access_token)
         obj_in = {
             "token": refresh_token,
             "login": user.login,
@@ -76,7 +80,7 @@ class AuthService:
         }
         logger.info(obj_in)
 
-        return self._repository_user.create(obj_in=obj_in)
+        return await self._repository_user.create(obj_in=obj_in)
 
     async def login(self, form_data):
         credentials_exception = HTTPException(
@@ -84,7 +88,7 @@ class AuthService:
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        user = self._repository_user.get(email=form_data.username)
+        user = self._repository_user.get(email=form_data.user_email)
         if not user:
             raise credentials_exception
         if not self.verify_password(
@@ -93,8 +97,9 @@ class AuthService:
         ):
             raise credentials_exception
 
-        refresh_token = self.create_refresh_token(user=user)
-        access_token = self.create_access_token(user=user)
+        refresh_token = self.create_refresh_token(user_login=user.login)
+        access_token = self.create_access_token(user_login=user.login)
+        await self._redis.set(user.login, access_token)
         logger.info(refresh_token)
 
         return {"token": refresh_token, "token_type": "bearer"}
@@ -123,8 +128,16 @@ class AuthService:
 
         if refresh_token.exp > datetime.utcnow():
             new_access_token = self.create_access_token(user)
-            await self._redis.set(user_login, new_access_token)
+            self._redis.set(user_login, new_access_token)
         else:
             print("access token is fine")
             # перенаправить пользователя на логин опять
         return new_access_token
+
+    async def get_login_history(self, user_login: str) -> List[LoginEvent]:
+        user = self._repository_user.get(login=user_login)
+        login_history = self._repository_login_event.get(user_id=user.id).all()
+        return login_history
+
+
+

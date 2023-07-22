@@ -18,12 +18,11 @@ from auth.services.role_service import RoleService
 class Container(containers.DeclarativeContainer):
     config = providers.Singleton(Settings)
 
-    db = providers.Singleton(SyncSession, db_url=config.provided.sync_sqlalchemy_database_uri)
+    db = providers.Singleton(SyncSession, db_url=config.provided.SYNC_SQLALCHEMY_DATABASE_URI)
 
     redis = providers.Resource(
         init_redis.init_redis_pool,
-        host=config.provided.REDIS_HOST,
-        port=config.provided.REDIS_HOST
+        host=config.provided.REDIS_HOST
     )
 
     repository_user = providers.Singleton(RepositoryUser,  model=User, session=db)
