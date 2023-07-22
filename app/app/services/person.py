@@ -146,7 +146,7 @@ class PersonService:
 
 
 @lru_cache()
-def get_film_service(
+def get_person_service(
         cache: AbstractCache = Depends(get_redis_cache),
         storage: AbstractStorage = Depends(get_elastic_storage)
 ):

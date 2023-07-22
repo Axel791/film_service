@@ -12,9 +12,11 @@ services:
     ports:
       - "80:80"
       - "81:81"
+      - "82:82"
     depends_on:
-      - api
       - admin
+      - auth
+      - api
     networks:
       - internal
 
@@ -61,6 +63,21 @@ services:
       - 80
     volumes:
       - ./app:/opt/app:rw
+    restart: always
+    networks:
+      - internal
+
+  auth:
+    container_name: ${PROJECT_SLUG}_auth
+    build:
+      context: ./auth
+      dockerfile: auth.dockerfile
+    env_file:
+      - .env
+    expose:
+      - 80
+    volumes:
+      - ./auth:/opt/auth:rw
     restart: always
     networks:
       - internal

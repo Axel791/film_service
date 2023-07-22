@@ -18,6 +18,7 @@ from app.exceptions.base import BaseNotFound
 
 def create_app(lifespan):
     fastapi_app = FastAPI(
+        root_path='/app',
         title=settings.project_slug,
         openapi_url=f"{settings.api_v1_str}/openai.json",
         lifespan=lifespan
@@ -43,7 +44,7 @@ async def lifespan(app: FastAPI):
     )
 
     init_es.es = AsyncElasticsearch(
-        hosts=f'{settings.es_schema}://{settings.es_host}:{settings.es_port}'
+        hosts=f'{settings.etl_schema}://{settings.etl_host}:{settings.etl_port}'
     )
 
     yield

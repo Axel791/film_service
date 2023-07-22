@@ -2,6 +2,7 @@ from fastapi import Query
 
 from app.core.config import settings
 
+
 class PaginateQueryParams:
     """Dependency class to parse pagination query params."""
 
