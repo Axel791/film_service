@@ -21,7 +21,7 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from auth.db.base import Base  # noqa
+from auth.db.base_class import Base  # noqa
 from auth.models import *
 from auth.core.config import settings
 
@@ -34,7 +34,7 @@ target_metadata = Base.metadata
 
 
 def get_url():
-    return settings.async_sqlalchemy_database_uri
+    return settings.ASYNC_SQLALCHEMY_DATABASE_URI
 
 
 def run_migrations_offline():

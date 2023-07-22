@@ -14,6 +14,7 @@ def create_app():
     container.wire(modules=[deps, auth, ])
 
     fastapi_app = FastAPI(
+        root_path='/auth',
         title=settings.PROJECT_SLUG,
         openapi_url=f"{settings.API_V1_STR}/openapi.json"
     )

@@ -14,8 +14,9 @@ services:
       - "81:81"
       - "82:82"
     depends_on:
-      - api
       - admin
+      - auth
+      - api
     networks:
       - internal
 
@@ -61,7 +62,7 @@ services:
     expose:
       - 80
     volumes:
-      - ./auth:/opt/auth:rw
+      - ./app:/opt/app:rw
     restart: always
     networks:
       - internal

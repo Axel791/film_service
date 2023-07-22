@@ -1,5 +1,4 @@
-from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn, field_validator
+from pydantic import PostgresDsn, BaseSettings, validator
 
 from typing import Any, Dict
 
@@ -26,31 +25,31 @@ class Settings(BaseSettings):
     JWT_REFRESH_SECRET_KEY: str
     AlGORITHM: str
 
-    # @field_validator("ASYNC_SQLALCHEMY_DATABASE_URI")
-    # def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
-    #     if isinstance(v, str):
-    #         return v
-    #     return PostgresDsn.build(
-    #         scheme="postgresql+asyncpg",
-    #         user=values.get("DB_USER"),
-    #         password=values.get("DB_PASSWORD"),
-    #         host=values.get("DB_HOST"),
-    #         port=values.get("DB_PORT"),
-    #         path=f"/{values.get('DB_NAME') or ''}",
-    #     )
-    #
-    # @field_validator("SYNC_SQLALCHEMY_DATABASE_URI")
-    # def assemble_sync_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
-    #     if isinstance(v, str):
-    #         return v
-    #     return PostgresDsn.build(
-    #         scheme="postgresql+asyncpg",
-    #         user=values.get("DB_USER"),
-    #         password=values.get("DB_PASSWORD"),
-    #         host=values.get("DB_HOST"),
-    #         port=values.get("DB_PORT"),
-    #         path=f"/{values.get('DB_NAME') or ''}",
-    #     )
+    @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
+        if isinstance(v, str):
+            return v
+        return PostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            user=values.get("DB_USER"),
+            password=values.get("DB_PASSWORD"),
+            host=values.get("DB_HOST"),
+            port=values.get("DB_PORT"),
+            path=f"/{values.get('DB_NAME') or ''}",
+        )
+
+    @validator("SYNC_SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_sync_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
+        if isinstance(v, str):
+            return v
+        return PostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            user=values.get("DB_USER"),
+            password=values.get("DB_PASSWORD"),
+            host=values.get("DB_HOST"),
+            port=values.get("DB_PORT"),
+            path=f"/{values.get('DB_NAME') or ''}",
+        )
 
     class Config:
         env_file = '.env'

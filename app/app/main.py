@@ -18,6 +18,7 @@ from app.exceptions.base import BaseNotFound
 
 def create_app(lifespan):
     fastapi_app = FastAPI(
+        root_path='/app',
         title=settings.project_slug,
         openapi_url=f"{settings.api_v1_str}/openai.json",
         lifespan=lifespan

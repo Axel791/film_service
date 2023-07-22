@@ -12,7 +12,7 @@ class RoleOut(BaseModel):
 class RoleIn(RoleOut):
 
     @validator("permission_class", allow_reuse=True)
-    def validate_permission(self, v):
+    def validate_permission(cls, v):
         if v not in [
             Permissions.NOT_ALL,
             Permissions.SOME,
