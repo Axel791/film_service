@@ -164,3 +164,16 @@ def make_get_request(http_session: aiohttp.ClientSession):
                 body = await response.json()
         return {'body': body, 'status': status}
     return inner
+
+
+@pytest_asyncio.fixture
+def make_post_request(http_session: aiohttp.ClientSession):
+    async def inner(url: str, query_data: dict | None = None) -> dict:
+        full_url = test_settings.auth_url + url
+        async with http_session.post(full_url, params=query_data) as response:
+            status = response.status
+            body = {}
+            if status in range(200, 400):
+                body = await response.json()
+        return {'body': body, 'status': status}
+    return inner
