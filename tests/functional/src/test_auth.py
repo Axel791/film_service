@@ -20,3 +20,16 @@ async def test_refresh(make_post_request):
     response = await make_post_request("/refresh", data={"access_token": "dummy_access_token"})
     assert response.status == 200
     assert response.body == {"access_token": "new_dummy_access_token", "token_type": "bearer"}
+
+@pytest.mark.asyncio
+async def test_refresh(make_post_request):
+    response = await make_post_request("/refresh", data={"access_token": "dummy_access_token"})
+    assert response.status == 200
+    assert response.body == {"access_token": "new_dummy_access_token", "token_type": "bearer"}
+
+
+@pytest.mark.asyncio
+async def test_get_login_history_endpoint(make_post_request):
+    response = await make_post_request("/get_login_history", data={'user_login': 'test_user'})
+    assert response.status == 200
+    assert isinstance(response.json(), list)
