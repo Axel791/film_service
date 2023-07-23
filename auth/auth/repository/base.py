@@ -25,8 +25,10 @@ class RepositoryBase(Generic[ModelType, ]):
     def get(self, *args, **kwargs,) -> Optional[ModelType]:
         return self._session.query(self._model).filter(*args).filter_by(**kwargs).first()
 
-    def list(self, *args, **kwargs):
-        return self._session.query(self._model).filter(*args).filter_by(**kwargs).all()
+    def list(self, skip: int = 0, limit: int = 10, *args, **kwargs):
+        query = self._session.query(self._model).filter(*args).filter_by(**kwargs)
+        query = query.offset(skip).limit(limit)
+        return query.all()
 
     def update(
             self,

@@ -59,8 +59,6 @@ services:
       dockerfile: backend.dockerfile
     env_file:
       - .env
-    expose:
-      - 80
     volumes:
       - ./app:/opt/app:rw
     restart: always
@@ -74,8 +72,6 @@ services:
       dockerfile: auth.dockerfile
     env_file:
       - .env
-    expose:
-      - 80
     volumes:
       - ./auth:/opt/auth:rw
     restart: always

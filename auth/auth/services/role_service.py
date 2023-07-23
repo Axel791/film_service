@@ -1,3 +1,5 @@
+from loguru import logger
+
 from typing import List
 
 from auth.repository.role import RepositoryRole
@@ -20,12 +22,14 @@ class RoleService:
     async def _get_role(self, role_id: str) -> Role:
         role = self._repository_role.get(id=role_id)
         if not role:
+            logger.warning(f"Role not found with ID: {role_id}")
             raise ValueError(errors_const.ROLE_NOT_FOUND)
         return role
 
     async def _get_user(self, user_id: str):
         user = self._repository_user.get(id=user_id)
         if not user:
+            logger.warning(f"User not found with ID: {user_id}")
             raise ValueError(errors_const.USER_NOT_FOUND)
         return user
 
@@ -40,11 +44,13 @@ class RoleService:
 
     async def delete(self, role_id: str) -> str:
         role = await self._get_role(role_id)
+        logger.info(f"Role to delete: {role}")
         self._repository_role.delete(db_obj=role)
         return const.DELETED
 
     async def update(self, role_id: str, role_item: RoleIn):
         role = await self._get_role(role_id)
+        logger.info(f"Role to update: {role}")
         return await self._repository_role.update(
             db_obj=role,
             obj_in={
@@ -74,3 +80,4 @@ class RoleService:
             }
         )
         return RoleOut.parse_obj(role)
+

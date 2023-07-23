@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from loguru import logger
 
 from dependency_injector.wiring import inject, Provide
 
@@ -19,6 +20,7 @@ async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         auth_service=Depends(Provide[Container.auth_service])
 ):
+    logger.info("Received login request for user: %s", form_data.username)
     return await auth_service.login(form_data=form_data)
 
 
@@ -29,6 +31,7 @@ async def registration(
         user: RegUserIn,
         auth_service=Depends(Provide[Container.auth_service])
 ):
+    logger.info("Received registration request for user: %s", user.login)
     return await auth_service.registration(user=user)
 
 
@@ -39,6 +42,7 @@ async def refresh(
         redis=Depends(Provide[Container.redis]),
         auth_service=Depends(Provide[Container.auth_service])
 ):
+    logger.info("Received refresh token request")
     return await auth_service.refresh_access_token(redis, access_token)
 
 
@@ -48,4 +52,7 @@ async def get_login_history(
         user=Depends(get_current_user),
         auth_service=Depends(Provide[Container.auth_service])
 ):
+
+    logger.info("Received request to get login history for user: %s", user_login)
     return await auth_service.get_login_history(user.login)
+

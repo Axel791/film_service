@@ -1,6 +1,7 @@
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import create_engine
 from contextvars import ContextVar
+from loguru import logger
 
 scope: ContextVar = ContextVar('db_session_scope')
 
@@ -9,7 +10,8 @@ def scopefunc():
     try:
         return scope.get()
     except LookupError:
-        print("scope not set")
+        logger.warning("scope not set")
+        return None
 
 
 # for fastapi
@@ -22,3 +24,22 @@ class SyncSession:
         self.sync_session_factory = sessionmaker(bind=self.sync_engine, autoflush=False, expire_on_commit=False)
         self.scoped_session = scoped_session(self.sync_session_factory, scopefunc=scopefunc)
         self.session = self.scoped_session()
+        logger.info("SyncSession initialized with DB URL: %s", self.db_url)
+
+    def __del__(self):
+        if self.dispose_session:
+            self.session.remove()
+            logger.debug("SyncSession disposed and session removed")
+
+    def __enter__(self):
+        return self.session
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if not self.dispose_session:
+            logger.warning("Session not disposed explicitly. Please make sure to call `.dispose()` when done.")
+        self.session.remove()
+        logger.debug("SyncSession exited and session removed")
+
+    def dispose(self):
+        self.session.remove()
+        logger.info("SyncSession disposed and session removed")

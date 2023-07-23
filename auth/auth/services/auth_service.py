@@ -90,24 +90,27 @@ class AuthService:
         )
         user = self._repository_user.get(email=form_data.user_email)
         if not user:
+            logger.warning(f"User with email {form_data.user_email} not found.")
             raise credentials_exception
         if not self.verify_password(
                 input_password=form_data.password,
                 hashed_password=user.password
         ):
+            logger.warning(f"Invalid password for user {user.login}.")
             raise credentials_exception
 
         refresh_token = self.create_refresh_token(user_login=user.login)
         access_token = self.create_access_token(user_login=user.login)
         await self._redis.set(user.login, access_token)
-        logger.info(refresh_token)
-
+        logger.info(f"User {user.login} logged in.")
+        logger.debug(f"Generated refresh token: {refresh_token}")
         return {"token": refresh_token, "token_type": "bearer"}
 
     async def refresh_access_token(self, access_token: Token) -> Token:
         try:
             decoded_token = jwt.decode(access_token.token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
         except jwt.JWTError:
+            logger.warning("Invalid token during access token refresh.")
             raise HTTPException(
                 status_code=401,
                 detail="Invalid token",
@@ -117,6 +120,7 @@ class AuthService:
         user_login = decoded_token.login
         stored_access_token = await self._redis.get(user_login)
         if stored_access_token != access_token:
+            logger.warning(f"Invalid access token for user {user_login}.")
             raise HTTPException(
                 status_code=401,
                 detail="Invalid access token",
@@ -129,15 +133,20 @@ class AuthService:
         if refresh_token.exp > datetime.utcnow():
             new_access_token = self.create_access_token(user)
             self._redis.set(user_login, new_access_token)
+            logger.info(f"Access token refreshed for user {user.login}.")
         else:
-            print("access token is fine")
-            # перенаправить пользователя на логин опять
+            logger.warning(f"Refresh token expired for user {user.login}.")
+            raise HTTPException(
+                status_code=401,
+                detail="Refresh token expired. Please log in again.",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
         return new_access_token
 
-    async def get_login_history(self, user_login: str) -> List[LoginEvent]:
+    async def get_login_history(self, user_login: str,
+                                page: int | None = 1,
+                                page_size: int | None = settings.default_page_size) -> List[LoginEvent]:
         user = self._repository_user.get(login=user_login)
-        login_history = self._repository_login_event.get(user_id=user.id).all()
+        login_history = self._repository_login_event.list(user_id=user.id, skip=page, offset=page_size)
+        logger.info(f"Login history retrieved for user {user.login}.")
         return login_history
-
-
-
