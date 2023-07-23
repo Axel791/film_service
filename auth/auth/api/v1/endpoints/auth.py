@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
@@ -9,7 +11,9 @@ from auth.core.containers import Container
 from auth.schemas.user import RegUserIn
 from auth.schemas.token import Token
 from auth.schemas.login_event import LoginEvent
-from auth.api.deps import get_current_user
+
+
+from auth.core.commons import PaginateQueryParams
 
 router = APIRouter()
 
@@ -48,11 +52,9 @@ async def refresh(
 
 @router.post('/get_login_history', response_model=LoginEvent)
 @inject
-async def get_login_history(
-        user=Depends(get_current_user),
-        auth_service=Depends(Provide[Container.auth_service])
-):
-
+async def get_login_history(commons: Annotated[PaginateQueryParams, Depends(PaginateQueryParams)],
+                            user_login: str,
+                            auth_service=Depends(Provide[Container.auth_service])
+                            ):
     logger.info("Received request to get login history for user: %s", user_login)
-    return await auth_service.get_login_history(user.login)
-
+    return await auth_service.get_login_history(user_login, page=commons.page, page_size=commons.page_size)
