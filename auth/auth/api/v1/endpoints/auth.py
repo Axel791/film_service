@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 
-from auth.api.deps import commit_and_close_session
 from dependency_injector.wiring import inject, Provide
+
+from auth.api.deps import commit_and_close_session
 from auth.core.containers import Container
 from auth.schemas.user import RegUserIn
 from auth.schemas.token import Token
 from auth.schemas.login_event import LoginEvent
+from auth.api.deps import get_current_user
 
 router = APIRouter()
 
@@ -47,8 +49,10 @@ async def refresh(
 @router.post('/get_login_history', response_model=LoginEvent)
 @inject
 async def get_login_history(
-        user_login: str,
+        user=Depends(get_current_user),
         auth_service=Depends(Provide[Container.auth_service])
 ):
+
     logger.info("Received request to get login history for user: %s", user_login)
-    return await auth_service.get_login_history(user_login)
+    return await auth_service.get_login_history(user.login)
+

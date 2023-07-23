@@ -8,7 +8,11 @@ from jose import JWTError, jwt
 from auth.core.containers import Container
 from auth.db.session import scope
 from auth.core.config import settings
+
 from loguru import logger
+
+from auth.models.roles import Permissions
+from auth.utils import errors_const
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/api/v1/auth/login")
 
@@ -27,7 +31,7 @@ async def get_current_user(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        username: str = payload.get("email")
+        username: str = payload.get("login")
         if username is None:
             raise credentials_exception
     except JWTError:
@@ -40,6 +44,52 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+
+@inject
+async def filter_user_superuser(
+        user=Depends(get_current_user),
+        rep_user=Depends(Provide[Container.repository_user])
+):
+    user = rep_user.get(id=user.id)
+    if user.role.permission_class == Permissions.ALL:
+        return user
+    raise HTTPException(
+        status_code=400,
+        detail=errors_const.PERMISSION_ERROR
+    )
+
+
+@inject
+async def filter_user_moderator(
+        user=Depends(get_current_user),
+        rep_user=Depends(Provide[Container.repository_user])
+):
+    user = rep_user.get(id=user.id)
+    if user.role.permission_class in [Permissions.MEDIUM, Permissions.ALL]:
+        return user
+    raise HTTPException(
+        status_code=400,
+        detail=errors_const.PERMISSION_ERROR
+    )
+
+
+@inject
+async def filter_user_subs(
+        user=Depends(get_current_user),
+        rep_user=Depends(Provide[Container.repository_user])
+):
+    user = rep_user.get(id=user.id)
+    if user.role.permission_class in [
+        Permissions.MEDIUM,
+        Permissions.SOME,
+        Permissions.ALL
+    ]:
+        return user
+    raise HTTPException(
+        status_code=400,
+        detail=errors_const.PERMISSION_ERROR
+    )
 
 
 @inject
