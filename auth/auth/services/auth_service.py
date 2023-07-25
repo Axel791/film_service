@@ -70,7 +70,7 @@ class AuthService:
         hashed_password = self._get_password_hash(password=user.password)
         refresh_token = self.create_refresh_token(user_login=user_login)
         access_token = self.create_access_token(user_login=user_login)
-        self._redis.set(user_login, access_token)
+        await self._redis.set(user_login, access_token)
         obj_in = {
             "token": refresh_token,
             "login": user.login,
@@ -104,7 +104,20 @@ class AuthService:
         await self._redis.set(user.login, access_token)
         logger.info(f"User {user.login} logged in.")
         logger.debug(f"Generated refresh token: {refresh_token}")
-        return {"token": refresh_token, "token_type": "bearer"}
+        return {
+            "token": refresh_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "login": user.login,
+                "password": user.password,
+                "email": user.email,
+                "role": user.role,
+                "user_id_role": user.user_role_id,
+                "created_at": user.created_at,
+                "token": user.token,
+            }
+        }
 
     async def refresh_access_token(self, access_token: Token) -> Token:
         try:
