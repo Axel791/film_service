@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     JWT_REFRESH_SECRET_KEY: str
     AlGORITHM: str
 
+    default_page_size: int = 10
+
     @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
         if isinstance(v, str):

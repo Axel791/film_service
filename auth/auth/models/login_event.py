@@ -1,7 +1,8 @@
 import uuid
-import datetime
 
-from sqlalchemy import Column, String, Enum, DateTime, Boolean
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -20,5 +21,10 @@ class LoginEvent(Base):
     )
     timestamp = Column(DateTime, default=datetime.utcnow)
     login_success = Column(Boolean, nullable=False)
+    user_role_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("role.id"),
+        nullable=True
+    )
 
     user = relationship('User')
