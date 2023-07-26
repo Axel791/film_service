@@ -22,8 +22,8 @@ class AuthService:
     ALGORITHM = settings.AlGORITHM
     SECRET_KEY = settings.JWT_SECRET_KEY
     REFRESH_SECRET_KEY = settings.JWT_REFRESH_SECRET_KEY
-    REFRESH_TOKEN_EXPIRE_MINS = 30
-    ACCESS_TOKEN_EXPIRE_MINS = 60 * 24 * 7
+    REFRESH_TOKEN_EXPIRE = settings.REFRESH_TOKEN_EXPIRE
+    ACCESS_TOKEN_EXPIRE = settings.ACCESS_TOKEN_EXPIRE
 
     def __init__(
             self,
@@ -150,3 +150,5 @@ class AuthService:
         login_history = self._repository_login_event.list(user_id=user.id, skip=page, offset=page_size)
         logger.info(f"Login history retrieved for user {user.login}.")
         return login_history
+
+

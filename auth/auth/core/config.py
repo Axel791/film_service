@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     ASYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
     SYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
-    # ACCESS_TOKEN_EXPIRE: int
-    # REFRESH_TOKEN_EXPIRE: int
+    ACCESS_TOKEN_EXPIRE: int
+    REFRESH_TOKEN_EXPIRE: int
     JWT_SECRET_KEY: str
     JWT_REFRESH_SECRET_KEY: str
     AlGORITHM: str
