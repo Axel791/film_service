@@ -21,6 +21,10 @@ dependency-injector = "^4.41.0"
 alembic = "^1.11.1"
 asyncpg = "^0.28.0"
 aioredis = "^2.0.1"
+opentelemetry-api = "^1.19.0"
+opentelemetry-sdk = "^1.19.0"
+opentelemetry-instrumentation-fastapi = "^0.40b0"
+opentelemetry-exporter-jaeger = "^1.19.0"
 
 
 [build-system]
