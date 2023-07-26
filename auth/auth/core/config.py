@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     REDIS_PORT: str
     REDIS_HOST: str
 
+    JAEGER_HOST: str
+    JAEGER_PORT: int
+
     ASYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
     SYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
