@@ -19,11 +19,13 @@ class Settings(BaseSettings):
     ASYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
     SYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
-    # ACCESS_TOKEN_EXPIRE: int
-    # REFRESH_TOKEN_EXPIRE: int
+    ACCESS_TOKEN_EXPIRE: int
+    REFRESH_TOKEN_EXPIRE: int
     JWT_SECRET_KEY: str
     JWT_REFRESH_SECRET_KEY: str
     AlGORITHM: str
+
+    default_page_size: int = 10
 
     @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:

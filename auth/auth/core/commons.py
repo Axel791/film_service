@@ -1,6 +1,6 @@
 from fastapi import Query
 
-from app.core.config import settings
+from auth.core.config import settings
 
 
 class PaginateQueryParams:
