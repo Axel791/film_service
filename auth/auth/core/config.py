@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     jaeger_host: str
     jaeger_port: int
+    enable_tracer: bool = True
 
     async_sqlalchemy_database_uri: PostgresDsn | None = None
     sync_sqlalchemy_database_uri: PostgresDsn | None = None
