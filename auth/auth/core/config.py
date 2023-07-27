@@ -4,35 +4,38 @@ from typing import Any, Dict
 
 
 class Settings(BaseSettings):
-    PROJECT_SLUG: str
-    API_V1_STR: str
+    project_slug: str
+    api_v1_str: str
 
-    DB_NAME: str
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: str
+    db_name: str
+    db_user: str
+    db_password: str
+    db_host: str
+    db_port: str
 
-    REDIS_PORT: str
-    REDIS_HOST: str
-    REDIS_DB_FOR_RATE_LIMITER: int = 1
+    redis_port: str
+    redis_host: str
+    redis_db_for_rate_limiter: int = 1
 
-    JAEGER_HOST: str
-    JAEGER_PORT: int
+    jaeger_host: str
+    jaeger_port: int
     enable_tracer: bool = True
 
-    ASYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
-    SYNC_SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
+    async_sqlalchemy_database_uri: PostgresDsn | None = None
+    sync_sqlalchemy_database_uri: PostgresDsn | None = None
 
-    ACCESS_TOKEN_EXPIRE: int
-    REFRESH_TOKEN_EXPIRE: int
-    JWT_SECRET_KEY: str
-    JWT_REFRESH_SECRET_KEY: str
-    ALGORITHM: str
+    access_token_expire: int
+    refresh_token_expire: int
+    jwt_secret_key: str
+    jwt_refresh_secret_key: str
+    algorithm: str
 
-    GOOGLE_CID: str
-    GOOGLE_SECRET: str
-    GOOGLE_DISCOVERY_URL: str
+    oauth_cid: str
+    oauth_secret: str
+    oauth_discovery_url: str
+    oauth_redirect_uri: str
+
+    oauth_provider: str
 
     default_page_size: int = 10
 

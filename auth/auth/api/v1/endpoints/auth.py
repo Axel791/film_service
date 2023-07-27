@@ -15,16 +15,34 @@ from auth.schemas.login_event import LoginEvent
 from auth.schemas.token import Token
 from auth.schemas.user import RegUserIn
 
+
 oauth = OAuth()
-oauth.register(
-    name="google",
-    client_id=settings.GOOGLE_CID,
-    client_secret=settings.GOOGLE_SECRET,
-    server_metadata_url=settings.GOOGLE_DISCOVERY_URL,
-    client_kwargs={"scope": "openid email profile"},
-)
+
+providers = {
+    "google": {
+        "client_id": settings.oauth_google_cid,
+        "client_secret": settings.oauth_google_secret,
+        "server_metadata_url": settings.oauth_google_discovery_url,
+    }
+    # Здесь можно добавить других провайдеров
+}
+
+for provider_name, provider_config in providers.items():
+    oauth.register(
+        name=provider_name,
+        client_id=provider_config["client_id"],
+        client_secret=provider_config["client_secret"],
+        server_metadata_url=provider_config["server_metadata_url"],
+        client_kwargs={"scope": "openid email profile"},
+    )
 
 router = APIRouter()
+
+
+@router.get("/login/{provider}")
+async def login_oauth(request: Request, provider: str):
+    redirect_uri = settings.oauth_redirect_uri
+    return await oauth.create_client(provider).authorize_redirect(request, redirect_uri)
 
 
 @router.post("/login", response_model=Token)
@@ -37,18 +55,12 @@ async def login(
     return await auth_service.login(form_data=form_data)
 
 
-@router.get("/login/google")
-async def login_google(request: Request):
-    redirect_uri = "http://localhost"
-    return await oauth.google.authorize_redirect(request, redirect_uri)
-
-
-@router.get("/login/callback")
+@router.get("/login/callback/{provider}")
 async def login_callback(
-        request: Request, auth_service=Depends(Provide[Container.auth_service])
+        request: Request, provider: str, auth_service=Depends(Provide[Container.auth_service])
 ):
-    token = await oauth.google.authorize_access_token(request)
-    user = await oauth.google.parse_id_token(request, token)
+    token = await oauth.create_client(provider).authorize_access_token(request)
+    user = await oauth.create_client(provider).parse_id_token(request, token)
     access_token = auth_service.create_access_token(user.login)
     return {"access_token": access_token, "token_type": "bearer"}
 
