@@ -27,7 +27,11 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE: int
     JWT_SECRET_KEY: str
     JWT_REFRESH_SECRET_KEY: str
-    AlGORITHM: str
+    ALGORITHM: str
+
+    GOOGLE_CID: str
+    GOOGLE_SECRET: str
+    GOOGLE_DISCOVERY_URL: str
 
     default_page_size: int = 10
 

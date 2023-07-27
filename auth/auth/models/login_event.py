@@ -20,9 +20,9 @@ class LoginEvent(Base):
     )
     timestamp = Column(DateTime, default=datetime.utcnow)
     login_success = Column(Boolean, nullable=False)
-    user_role_id = Column(
+    user_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("role.id"),
+        ForeignKey("user.id"),
         nullable=True
     )
 
