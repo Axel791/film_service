@@ -2,7 +2,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, String, ForeignKey
+from sqlalchemy import Column, DateTime, String, ForeignKey, List
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -32,6 +32,7 @@ class User(Base):
     )
     role = relationship("Role")
     login_events = relationship('LoginEvent', cascade='all, delete-orphan')
+    providers = relationship('UserProvider', back_populates='user')
 
     def __str__(self):
         return self.login
