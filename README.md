@@ -16,7 +16,7 @@
 ## Доступы и настройки
 
 - **Django Admin**: `http://localhost:8000/admin/`
-- **Movies API**: `http://localhost:8000/`
-- **Auth API**: `http://localhost:8001/`
+- **Movies API**: `http://localhost:80/app/docs/`
+- **Auth API**: `http://localhost:82/auth/docs/`
 - **ElasticSearch**: `http://localhost:9200/`
 
