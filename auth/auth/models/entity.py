@@ -31,6 +31,7 @@ class User(Base):
         nullable=True
     )
     role = relationship("Role")
+    login_events = relationship('LoginEvent', cascade='all, delete-orphan')
 
     def __str__(self):
         return self.login

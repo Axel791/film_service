@@ -22,7 +22,7 @@ class LoginEvent(Base):
     login_success = Column(Boolean, nullable=False)
     user_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("user.id"),
+        ForeignKey("user.id", ondelete="CASCADE"),
         nullable=True
     )
 
