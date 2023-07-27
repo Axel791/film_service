@@ -16,7 +16,8 @@ from fastapi import FastAPI
 
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-configure_jaeger_tracer()
+if settings.enable_tracer:
+    configure_jaeger_tracer()
 
 
 def create_app():
