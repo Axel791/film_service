@@ -28,7 +28,6 @@ class User(Base):
     user_role_id = Column(
         UUID(as_uuid=True),
         ForeignKey("role.id"),
-        nullable=True
     )
     role = relationship("Role")
     login_events = relationship('LoginEvent', cascade='all, delete-orphan')

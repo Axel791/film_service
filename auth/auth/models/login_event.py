@@ -23,7 +23,6 @@ class LoginEvent(Base):
     user_id = Column(
         UUID(as_uuid=True),
         ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=True
     )
 
     user = relationship('User')
