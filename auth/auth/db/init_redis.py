@@ -2,6 +2,12 @@ from aioredis import Redis, from_url
 from typing import AsyncIterator
 from loguru import logger
 
+redis_for_rate_limiter: Redis | None = None
+
+
+async def get_redis_for_rate_limiter() -> Redis:
+    return redis_for_rate_limiter
+
 
 async def init_redis_pool(host: str) -> AsyncIterator[Redis]:
     try:
