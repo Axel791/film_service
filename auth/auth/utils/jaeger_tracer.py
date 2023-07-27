@@ -2,12 +2,14 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.sdk.resources import Resource
 
 from auth.core.config import settings
 
 
 def configure_jaeger_tracer() -> None:
-    trace.set_tracer_provider(TracerProvider())
+    resource = Resource.create({'service.name': 'auth-service'})
+    trace.set_tracer_provider(TracerProvider(resource=resource))
     trace.get_tracer_provider().add_span_processor(
         BatchSpanProcessor(
             JaegerExporter(
