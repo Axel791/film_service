@@ -16,10 +16,6 @@ from passlib.context import CryptContext
 from redis.asyncio import Redis
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/token"
-)  # Replace "/token" with your token URL endpoint
-
 
 class AuthService:
     ALGORITHM = settings.ALGORITHM
@@ -73,9 +69,11 @@ class AuthService:
             raise ValueError("Такой логин уже зарегистрирован.")
 
         hashed_password = self._get_password_hash(password=user.password)
-        refresh_token = self.create_refresh_token(user_login=user.login)
-        access_token = self.create_access_token(user_login=user.login)
-        await self._redis.set(user.login, access_token)
+
+        refresh_token = self.create_refresh_token(user_login=user_login)
+        access_token = self.create_access_token(user_login=user_login)
+        await self._redis.set(user_login, access_token)
+
         obj_in = {
             "token": refresh_token,
             "login": user.login,
@@ -109,8 +107,21 @@ class AuthService:
         self._send_login_event(user.id, True)
         logger.info(f"User {user.login} logged in.")
         logger.debug(f"Generated refresh token: {refresh_token}")
+        return {
+            "token": refresh_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "login": user.login,
+                "password": user.password,
+                "email": user.email,
+                "role": user.role,
+                "user_id_role": user.user_role_id,
+                "created_at": user.created_at,
+                "token": user.token,
+            }
+        }
 
-        return {"token": refresh_token, "token_type": "bearer"}
 
     async def refresh_access_token(self, access_token: Token) -> Token:
         try:
