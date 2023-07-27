@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     REDIS_PORT: str
     REDIS_HOST: str
+    REDIS_DB_FOR_RATE_LIMITER: int = 1
 
     JAEGER_HOST: str
     JAEGER_PORT: int
@@ -29,6 +30,8 @@ class Settings(BaseSettings):
     AlGORITHM: str
 
     default_page_size: int = 10
+
+    requests_limit_per_min: int = 20
 
     @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
