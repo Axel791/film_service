@@ -29,9 +29,12 @@ class Settings(BaseSettings):
     jwt_refresh_secret_key: str
     algorithm: str
 
-    google_cid: str
-    google_secret: str
-    google_discovery_url: str
+    oauth_cid: str
+    oauth_secret: str
+    oauth_discovery_url: str
+    oauth_redirect_uri: str
+
+    oauth_provider: str
 
     default_page_size: int = 10
 
