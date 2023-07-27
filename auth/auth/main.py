@@ -5,30 +5,15 @@ from auth.api.v1.endpoints import auth
 from auth.core.config import settings
 from auth.core.containers import Container
 
+from auth.utils.jaeger_tracer import configure_jaeger_tracer
+from auth.middlewares.request_id_middleware import RequestIdMiddleware
+
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Request, status
-from fastapi.responses import ORJSONResponse
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
+from fastapi import FastAPI
+
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 
-
-def configure_tracer() -> None:
-    trace.set_tracer_provider(TracerProvider())
-    trace.get_tracer_provider().add_span_processor(
-        BatchSpanProcessor(
-            JaegerExporter(
-                agent_host_name=settings.JAEGER_HOST,
-                agent_port=settings.JAEGER_PORT,
-            )
-        )
-    )
-    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
-
-
-configure_tracer()
+configure_jaeger_tracer()
 
 
 def create_app():
@@ -47,6 +32,8 @@ def create_app():
         allow_methods=["*"],  # Allows all methods
         allow_headers=["*"],  # Allows all headers
     )
+    fastapi_app.add_middleware(RequestIdMiddleware)
+
     fastapi_app.container = container
 
     fastapi_app.include_router(api.api_router, prefix=settings.API_V1_STR)
@@ -56,13 +43,3 @@ def create_app():
 
 app = create_app()
 FastAPIInstrumentor.instrument_app(app)
-
-
-@app.middleware('http')
-async def before_request(request: Request, call_next):
-    response = await call_next(request)
-    request_id = request.headers.get('X-Request-Id')
-    if not request_id:
-        return ORJSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
-                              content={'detail': 'X-Request-Id is required'})
-    return response
