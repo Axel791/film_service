@@ -1,15 +1,15 @@
 from datetime import datetime, timedelta
 from typing import List
 
-import requests
 from auth.core.config import settings
 from auth.repository.login_event import RepositoryLoginEvent
 from auth.repository.user import RepositoryUser
+from auth.repository.user_provider import UserProvider
 from auth.schemas.login_event import LoginEvent
 from auth.schemas.token import Token
 from auth.schemas.user import RegUserIn
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from loguru import logger
 from passlib.context import CryptContext
@@ -17,23 +17,24 @@ from redis.asyncio import Redis
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 class AuthService:
-    ALGORITHM = settings.ALGORITHM
-    SECRET_KEY = settings.JWT_SECRET_KEY
-    REFRESH_SECRET_KEY = settings.JWT_REFRESH_SECRET_KEY
-    REFRESH_TOKEN_EXPIRE = settings.REFRESH_TOKEN_EXPIRE
-    ACCESS_TOKEN_EXPIRE = settings.ACCESS_TOKEN_EXPIRE
-    AUD = settings.GOOGLE_CID
-    ISS = settings.GOOGLE_ISS
+    ALGORITHM = settings.algorithm
+    SECRET_KEY = settings.jwt_secret_key
+    REFRESH_SECRET_KEY = settings.jwt_refresh_secret_key
+    REFRESH_TOKEN_EXPIRE = settings.refresh_token_expire
+    ACCESS_TOKEN_EXPIRE = settings.access_token_expire
 
     def __init__(
             self,
             repository_user: RepositoryUser,
             repository_login_event: RepositoryLoginEvent,
+            repository_user_provider: UserProvider,
             redis: Redis,
     ):
         self._repository_user = repository_user
         self._repository_login_event = repository_login_event
+        self._repository_user_provider = repository_user_provider
         self._redis = redis
 
     def create_access_token(self, user_login: str) -> str:
@@ -122,7 +123,6 @@ class AuthService:
             }
         }
 
-
     async def refresh_access_token(self, access_token: Token) -> Token:
         try:
             decoded_token = jwt.decode(
@@ -175,3 +175,6 @@ class AuthService:
         )
         logger.info(f"Login history retrieved for user {user.login}.")
         return login_history
+
+    def store_provider_data(self):
+        pass
