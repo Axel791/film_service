@@ -8,12 +8,14 @@ from auth.repository.user_provider import UserProvider
 from auth.schemas.login_event import LoginEvent
 from auth.schemas.token import Token
 from auth.schemas.user import RegUserIn
+from auth.utils.check_jwt_token import CheckToken
 
 from fastapi import Depends, HTTPException, status
 from jose import jwt
 from loguru import logger
 from passlib.context import CryptContext
 from redis.asyncio import Redis
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -162,6 +164,9 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         return Token(token=new_access_token)
+
+    async def check_authorisation(self, access_token: Token) -> CheckToken:
+        pass
 
     async def get_login_history(
             self,

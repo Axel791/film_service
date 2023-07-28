@@ -15,6 +15,7 @@ from auth.schemas.login_event import LoginEvent
 from auth.schemas.token import Token
 from auth.schemas.user import RegUserIn
 
+from auth.utils.check_jwt_token import CheckToken
 
 oauth = OAuth()
 
@@ -84,6 +85,16 @@ async def refresh(
 ):
     logger.info("Received refresh token request")
     return await auth_service.refresh_access_token(redis, access_token)
+
+
+@router.get("/check_authorisation", response_model=CheckToken)
+@inject
+async def check_authorisation(
+        access_token: Token,
+        redis=Depends(Provide[Container.redis]),
+        auth_service=Depends(Provide[Container.auth_service]),
+) -> CheckToken:
+    return await auth_service.check_authorisation(redis, access_token)
 
 
 @router.post("/get_login_history", response_model=LoginEvent)
