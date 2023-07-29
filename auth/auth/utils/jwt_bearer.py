@@ -25,7 +25,7 @@ class JWTBearer(HTTPBearer):
         if not credentials.scheme == 'Bearer':
             raise HTTPException(status_code=http.HTTPStatus.UNAUTHORIZED,
                                 detail='Only Bearer token might be accepted')
-        token = f'{credentials.scheme} {credentials.credentials}'
+        token = credentials.credentials
         return token
 
 

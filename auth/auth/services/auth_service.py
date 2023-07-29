@@ -16,6 +16,7 @@ from loguru import logger
 from passlib.context import CryptContext
 from redis.asyncio import Redis
 
+from utils.check_jwt_token import check_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -165,8 +166,9 @@ class AuthService:
             )
         return Token(token=new_access_token)
 
-    async def check_authorisation(self, access_token: Token) -> CheckToken:
-        pass
+    async def check_authorisation(self, token: str) -> CheckToken:
+        token_data: CheckToken = check_token(secret=settings.jwt_secret_key, token=token)
+        return token_data
 
     async def get_login_history(
             self,
