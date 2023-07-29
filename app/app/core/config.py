@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     redis_port: str
     redis_host: str
 
+    authentication_url: str
+
     film_cache_expire_in_second: int = 60
 
     default_page_size: int = 10

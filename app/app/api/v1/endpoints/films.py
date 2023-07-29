@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from typing import List, Annotated
 
@@ -6,7 +6,8 @@ from app.core.commons import PaginateQueryParams
 from app.core.config import settings
 from app.api.v1.schemas.films import FilmWork, FilmWorkShort
 from app.services.film import get_film_service, FilmWorkService
-
+from app.auth.jwt_bearer import CheckToken, security_jwt
+from app.auth.check_authorisation import check_authorisation
 
 router = APIRouter()
 
@@ -17,8 +18,12 @@ router = APIRouter()
             )
 async def get_film(
         film_id: str,
-        film_work_service: FilmWorkService = Depends(get_film_service)
+        film_work_service: FilmWorkService = Depends(get_film_service),
+        auth_data: str = Depends(security_jwt),
 ) -> FilmWork:
+    check_token: CheckToken = check_authorisation(token=auth_data)
+    if not check_token.is_valid:
+        raise HTTPException(status_code=401, detail=check_token.message)
     return await film_work_service.get(film_id=film_id)
 
 
@@ -27,10 +32,14 @@ async def get_film(
             description='Get all movies filtered by genre and sorted by rating.',
             )
 async def list_films(commons: Annotated[PaginateQueryParams, Depends(PaginateQueryParams)],
-        genres: str | None = None,
-        rating_order: str | None = None,
-        film_work_service: FilmWorkService = Depends(get_film_service)
-) -> List[FilmWork]:
+                     genres: str | None = None,
+                     rating_order: str | None = None,
+                     film_work_service: FilmWorkService = Depends(get_film_service),
+                     auth_data: str = Depends(security_jwt),
+                     ) -> List[FilmWork]:
+    check_token: CheckToken = check_authorisation(token=auth_data)
+    if not check_token.is_valid:
+        raise HTTPException(status_code=401, detail=check_token.message)
     return await film_work_service.list(
         genre=genres,
         rating_order=rating_order,
@@ -41,9 +50,13 @@ async def list_films(commons: Annotated[PaginateQueryParams, Depends(PaginateQue
 
 @router.get('/search')
 async def search_films(commons: Annotated[PaginateQueryParams, Depends(PaginateQueryParams)],
-        query: str,
-        film_work_service: FilmWorkService = Depends(get_film_service)
-) -> List[FilmWorkShort]:
+                       query: str,
+                       film_work_service: FilmWorkService = Depends(get_film_service),
+                       auth_data: str = Depends(security_jwt),
+                       ) -> List[FilmWorkShort]:
+    check_token: CheckToken = check_authorisation(token=auth_data)
+    if not check_token.is_valid:
+        raise HTTPException(status_code=401, detail=check_token.message)
     return await film_work_service.search(
         query=query,
         page=commons.page,
