@@ -145,22 +145,6 @@ services:
     networks:
       - internal
 
-
-#  api:
-#    container_name: ${PROJECT_SLUG}_api
-#    build:
-#      context: ./app
-#      dockerfile: backend.dockerfile
-#    env_file:
-#      - .env
-#    expose:
-#      - 80
-#    volumes:
-#      - ./app:/opt/app:rw
-#    restart: always
-#    networks:
-#      - internal
-
   nginx:
     build: ./nginx
     container_name: ${PROJECT_SLUG}_nginx
