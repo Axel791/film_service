@@ -22,53 +22,21 @@ class KafkaService:
         }
         return Producer(producer_config)
 
-    def produce_message(self, topic: str, message: Message) -> Dict[str, str]:
+    async def produce(self, topic: str, message: Message) -> Dict[str, str]:
         producer = self._create_producer()
-
+        json_message = json.dumps(message.message)
         try:
-            producer.produce(topic, message.message.encode('utf-8'))
-            producer.flush()
-            return {"message": message}
+            await self._produce_message(producer, topic, json_message)
+            await self._flush_and_close(producer)
         except Exception as e:
             return {"error": str(e)}
-        finally:
-            producer.close()
 
-    def create_consumer(self) -> Consumer:
-        consumer_config = {
-            "bootstrap.servers": self.broker_url,
-            "group.id": self.group_id,
-            "auto.offset.reset": "earliest"
-        }
-        return Consumer(consumer_config)
+    async def _produce_message(self, producer: Producer, topic: str, message: str) -> None:
+        await producer.produce(topic, message.encode('utf-8'))
+        await producer.poll(10000)
 
-    def consume_messages(self, topic: str) -> Dict[str, Message]:
-        consumer = self._create_consumer()
-        consumer.subscribe([topic])
-        messages = []
-
-        try:
-            while True:
-                msg = consumer.poll(1.0)  # Poll for messages every 1 second
-                msg_data = json.loads(msg.value)
-                msg = Message(**msg_data)
-                if msg is None:
-                    continue
-                if msg.error():
-                    if msg.error().code() == KafkaError._PARTITION_EOF:
-                        break
-                    else:
-                        raise KafkaError(msg.error())
-                messages.append(msg.decode('utf-8'))
-        except KeyboardInterrupt:
-            pass
-        except KafkaError as e:
-            return {"error": str(e)}
-        finally:
-            consumer.unsubscribe()
-            consumer.close()
-
-        return {"messages": messages}
+    async def _flush_and_close(self, producer: Producer) -> None:
+        await producer.flush()
 
 
 @lru_cache()
