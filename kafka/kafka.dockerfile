@@ -17,7 +17,5 @@ COPY . .
 ENV APP_MODULE="app.main:app"
 ENV PYTHONPATH=/opt/app
 
-COPY init_kafka.sh /init_kafka.sh
-RUN chmod u+x /init_kafka.sh
 
 CMD ["/start-reload.sh"]

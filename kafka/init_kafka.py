@@ -7,8 +7,8 @@ from app.core.config import settings
 kafka_broker = settings.kafka_broker_url
 schema_registry_url = settings.schema_registry_url
 
-# kafka_broker = "localhost:9092"
-# schema_registry_url = "http://localhost:8081/"
+# kafka_broker = "broker:9092"
+# schema_registry_url = "http://schema-registry:8081/"
 
 
 topics_to_create = ["page-view", "custom-event"]
