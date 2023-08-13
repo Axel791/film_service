@@ -1,9 +1,9 @@
+import asyncio
 from typing import Dict
 from functools import lru_cache
 import json
 
-
-from confluent_kafka import Producer, Consumer, KafkaError
+from aiokafka import AIOKafkaProducer
 
 from app.core.config import settings
 from app.api.v1.schemas.message import Message
@@ -15,28 +15,17 @@ class KafkaService:
         self.schema_registry_url = schema_registry_url
         self.group_id = group_id
 
-    def _create_producer(self) -> Producer:
-        producer_config = {
-            "bootstrap.servers": self.broker_url,
-            "client.id": "fastapi-producer"
-        }
-        return Producer(producer_config)
-
-    async def produce(self, topic: str, message: Message) -> Dict[str, str]:
-        producer = self._create_producer()
+    async def produce(self, topic: str, message: Message):
+        producer = AIOKafkaProducer(bootstrap_servers=self.broker_url)
+        await producer.start()
         json_message = json.dumps(message.message)
         try:
-            await self._produce_message(producer, topic, json_message)
-            await self._flush_and_close(producer)
+            await producer.send_and_wait(topic, json_message.encode('utf-8'))
+            return "Message is sent"
         except Exception as e:
             return {"error": str(e)}
-
-    async def _produce_message(self, producer: Producer, topic: str, message: str) -> None:
-        await producer.produce(topic, message.encode('utf-8'))
-        await producer.poll(10000)
-
-    async def _flush_and_close(self, producer: Producer) -> None:
-        await producer.flush()
+        finally:
+            await producer.stop()
 
 
 @lru_cache()

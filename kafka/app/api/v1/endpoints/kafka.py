@@ -16,5 +16,5 @@ async def produce(
         topic: str,
         message: Message,
         kafka_service: KafkaService = Depends(get_kafka_service)
-) -> Dict[str, Message]:
+):
     return await kafka_service.produce(topic=topic, message=message)
