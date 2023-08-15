@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "namespace": "com.mycorp.mynamespace",
+  "name": "PageView",
+  "doc": "Schema for recording page view events.",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "string",
+      "doc": "The ID of the user who performed the page view."
+    },
+    {
+      "name": "pageURL",
+      "type": "string",
+      "doc": "The url of the page that was viewed."
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "The timestamp of the page view event."
+    }
+  ]
+}

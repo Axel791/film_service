@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "namespace": "com.mycorp.mynamespace",
+  "name": "CustomEvent",
+  "doc": "Schema for recording custom events.",
+  "fields": [
+    {
+      "name": "eventName",
+      "type": "string",
+      "doc": "The name of the custom event."
+    },
+    {
+      "name": "eventData",
+      "type": "string",
+      "doc": "Data associated with the custom event."
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "The timestamp of the custom event."
+    }
+  ]
+}
