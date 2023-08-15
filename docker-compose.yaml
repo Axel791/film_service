@@ -102,6 +102,19 @@ services:
     networks:
       - internal
 
+  kafka-ch-etl:
+    container_name: ${PROJECT_SLUG}_kafka_ch_etl
+    build:
+      context: ./kafka-ch-etl
+      dockerfile: kafka_ch_etl.dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./kafka-ch-etl:/opt/kafka-ch-etl:rw
+    restart: always
+    networks:
+      - internal
+
   redis:
     image: redis:6.2.6
     networks:
