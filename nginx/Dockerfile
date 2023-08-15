@@ -6,4 +6,5 @@ COPY servers/proxy_params /etc/nginx/
 COPY servers/admin.conf /etc/nginx/servers/
 COPY servers/api.conf /etc/nginx/servers/
 COPY servers/auth.conf /etc/nginx/servers/
+COPY servers/kafka.conf /etc/nginx/servers/
 

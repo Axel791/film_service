@@ -1,152 +1,5 @@
+version: '3.7'
 services:
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"
-      - "6831:6831/udp"
-
-  nginx:
-    build: ./nginx
-    container_name: ${PROJECT_SLUG}_nginx
-    volumes:
-      - static_dir:/opt/admin/static/
-      - media_dir:/opt/admin/media/
-    ports:
-      - "80:80"
-      - "81:81"
-      - "82:82"
-      - "83:83"
-    depends_on:
-      - admin
-      - auth
-      - api
-      - kafka
-    networks:
-      - internal
-
-  db:
-    image: postgres:latest
-    container_name: ${PROJECT_SLUG}_db
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./etl/db_backup/movies_db.sql:/docker-entrypoint-initdb.d/dump.sql
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    networks:
-      - internal
-
-  admin:
-    build:
-      context: ./admin
-      dockerfile: admin.dockerfile
-    container_name: ${PROJECT_SLUG}_admin
-    working_dir: /opt/admin
-    volumes:
-      - static_dir:/opt/admin/static/
-      - media_dir:/opt/admin/media/
-      - ./admin:/opt/admin:rw
-    env_file:
-      - .env
-    depends_on:
-      - db
-    networks:
-      - internal
-
-  api:
-    container_name: ${PROJECT_SLUG}_api
-    build:
-      context: ./app
-      dockerfile: backend.dockerfile
-    env_file:
-      - .env
-    expose:
-      - 80
-    volumes:
-      - ./app:/opt/app:rw
-    restart: always
-    networks:
-      - internal
-
-  auth:
-    container_name: ${PROJECT_SLUG}_auth
-    build:
-      context: ./auth
-      dockerfile: auth.dockerfile
-    env_file:
-      - .env
-    expose:
-      - 80
-    volumes:
-      - ./auth:/opt/auth:rw
-    restart: always
-    networks:
-      - internal
-
-  kafka:
-    container_name: ${PROJECT_SLUG}_kafka_api
-    build:
-      context: ./kafka
-      dockerfile: kafka.dockerfile
-    env_file:
-      - .env
-    expose:
-      - 80
-    volumes:
-      - ./kafka:/opt/kafka:rw
-    restart: always
-    networks:
-      - internal
-
-  kafka-ch-etl:
-    container_name: ${PROJECT_SLUG}_kafka_ch_etl
-    build:
-      context: ./kafka-ch-etl
-      dockerfile: kafka_ch_etl.dockerfile
-    env_file:
-      - .env
-    volumes:
-      - ./kafka-ch-etl:/opt/kafka-ch-etl:rw
-    restart: always
-    networks:
-      - internal
-
-  redis:
-    image: redis:6.2.6
-    networks:
-      - internal
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
-    environment:
-      - "discovery.type=single-node"
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      internal:
-        aliases:
-          - elasticsearch
-
-  app:
-    container_name: ${PROJECT_SLUG}_etl
-    build:
-      context: ./etl
-      dockerfile: etl.dockerfile
-    depends_on:
-      - db
-      - elasticsearch
-    volumes:
-      - ./etl:/opt/etl:rw
-    env_file:
-      - .env
-    networks:
-      - internal
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.1
     hostname: zookeeper
@@ -277,13 +130,41 @@ services:
     networks:
       - internal
 
+  kafka:
+    container_name: ${PROJECT_SLUG}_kafka_api
+    build:
+      context: ./kafka
+      dockerfile: kafka.dockerfile
+    env_file:
+      - .env
+    expose:
+      - 80
+    volumes:
+      - ./kafka:/opt/kafka:rw
+    restart: always
+    networks:
+      - internal
+
+  nginx:
+    build: ./nginx
+    container_name: ${PROJECT_SLUG}_nginx
+    volumes:
+      - static_dir:/opt/admin/static/
+      - media_dir:/opt/admin/media/
+    ports:
+      - "80:80"
+      - "81:81"
+      - "82:82"
+      - "83:83"
+    depends_on:
+      - kafka
+    networks:
+      - internal
 
 volumes:
   static_dir:
   media_dir:
-  pgdata:
-  elasticsearch_data:
-
 
 networks:
   internal:
+    driver: bridge

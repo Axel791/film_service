@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "namespace": "com.example.events",
+  "name": "MovieWatchedEvent",
+  "doc": "Schema for recording a movie watched event.",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "string",
+      "doc": "The ID of the user who watched the movie."
+    },
+    {
+      "name": "movieId",
+      "type": "string",
+      "doc": "The ID of the movie that was watched."
+    },
+   {
+      "name": "viewingDuration",
+      "type": {
+        "type": "long",
+        "logicalType": "duration-millis"
+      },
+      "doc": "The duration of the movie that was watched."
+    }
+  ]
+}
