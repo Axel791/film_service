@@ -7,6 +7,7 @@ class Settings(BaseSettings):
 
     kafka_broker_url: str
     schema_registry_url: str
+    number_partitions: int
 
     class Config:
         env_file = '.env'
