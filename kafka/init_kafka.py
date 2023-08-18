@@ -6,12 +6,13 @@ from app.core.config import settings
 
 kafka_broker = settings.kafka_broker_url
 schema_registry_url = settings.schema_registry_url
+number_partitions = settings.number_partitions
 
 # kafka_broker = "broker:9092"
 # schema_registry_url = "http://schema-registry:8081/"
 
 
-topics_to_create = ["page-view", "custom-event"]
+topics_to_create = ["page-view", "custom-event", "movie-watched-event"]
 
 
 def topic_exists(admin, topic_name):
