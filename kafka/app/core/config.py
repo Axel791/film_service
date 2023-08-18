@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     schema_registry_url: str
     number_partitions: int
 
+    jwt_secret_key: str
+    algorithm: str
+
     class Config:
         env_file = '.env'
         env_file_encoding = 'utf-8'
