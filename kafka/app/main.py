@@ -9,9 +9,9 @@ from app.core.config import settings
 
 def create_app():
     fastapi_app = FastAPI(
-        root_path='/kafka_app',
+        root_path="/kafka_app",
         title=settings.project_slug,
-        openapi_url=f"{settings.api_v1_str}/openai.json"
+        openapi_url=f"{settings.api_v1_str}/openai.json",
     )
 
     fastapi_app.add_middleware(

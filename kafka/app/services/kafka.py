@@ -20,7 +20,7 @@ class KafkaService:
         await producer.start()
         json_message = json.dumps(message.message)
         try:
-            await producer.send_and_wait(topic, json_message.encode('utf-8'))
+            await producer.send_and_wait(topic, json_message.encode("utf-8"))
             return "Message is sent"
         except Exception as e:
             return {"error": str(e)}
@@ -33,5 +33,5 @@ def get_kafka_service() -> KafkaService:
     return KafkaService(
         broker_url=settings.kafka_broker_url,
         schema_registry_url=settings.schema_registry_url,
-        group_id='test'
+        group_id="test",
     )

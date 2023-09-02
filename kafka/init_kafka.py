@@ -39,21 +39,25 @@ def register_schema(subject, schema):
     try:
         schema_id = schema_registry_client.register(subject, schema)
         if schema_id is not None:
-            logging.info("Schema registered successfully for subject '%s' with ID: %s", subject, schema_id)
+            logging.info(
+                "Schema registered successfully for subject '%s' with ID: %s",
+                subject,
+                schema_id,
+            )
         else:
             logging.error("Failed to register schema for subject '%s'", subject)
     except Exception as e:
         logging.error("Error registering schema for subject '%s': %s", subject, e)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     admin = AdminClient({"bootstrap.servers": kafka_broker})
     for topic in topics_to_create:
         if not topic_exists(admin, topic):
             create_topic(admin, topic)
-            with open(f'avro_schemas/{topic}-subject.avsc', 'r') as file:
+            with open(f"avro_schemas/{topic}-subject.avsc", "r") as file:
                 avro_schema_contents = file.read()
                 avro_schema_dict = json.loads(avro_schema_contents)
                 avro_schema = json.dumps(avro_schema_dict)
-            register_schema(f'{topic}-subject', avro_schema)
+            register_schema(f"{topic}-subject", avro_schema)
