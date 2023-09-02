@@ -1,9 +1,9 @@
 from fastapi import Request
-from starlette.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
-from auth.db import init_redis
 from auth.core.config import settings
+from auth.db import init_redis
 from auth.utils.check_jwt_token import check_token
 from auth.utils.rate_limiter import RateLimiter
 
@@ -13,7 +13,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # если запрос не авторизованный берем в качестве идентификатора ip-адрес юзера
         user_id = str(request.client.host)
         # если запрос авторизованный берем user_id из токена если он валидный
-        bearer_token = (request.headers.get('authorization'))
+        bearer_token = request.headers.get("authorization")
         if bearer_token is not None:
             token = bearer_token.split()[-1]
             token_data = check_token(secret=settings.JWT_SECRET_KEY, token=token)
@@ -21,7 +21,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 user_id = token_data.user_id
         rate_limiter = RateLimiter(init_redis.redis_for_rate_limiter)
         if not await rate_limiter.check_rate_limit(user_id):
-            return JSONResponse(status_code=429,
-                                content={'warning': 'Too many requests per minute'})
+            return JSONResponse(
+                status_code=429, content={"warning": "Too many requests per minute"}
+            )
         response = await call_next(request)
         return response

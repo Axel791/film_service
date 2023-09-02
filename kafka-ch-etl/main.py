@@ -1,16 +1,22 @@
-from loguru import logger
-from core.config import settings
-import backoff
+import sys
 
-import logging
-
+import sentry_sdk
 from clickhouse_driver import Client
-
 from confluent_kafka import Consumer
+from loguru import logger
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import backoff
+from core.config import settings
+
+logger.add(
+    "/var/log/kafka_ch_etl/access-log.json",
+    rotation="500 MB",
+    retention="7 days",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+)
+logger.add(sys.stdout, format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
+
+sentry_sdk.init(dsn=settings.sentry_dsn)
 
 
 class KafkaToClickHouseProcessor:
@@ -27,22 +33,30 @@ class KafkaToClickHouseProcessor:
 
     def initialize_clickhouse_client(self):
         return Client(
-            host=self.clickhouse_config['host'],
-            port=self.clickhouse_config['port'],
-            user=self.clickhouse_config['user'],
-            password=self.clickhouse_config['password'],
-            database=self.clickhouse_config['database']
+            host=self.clickhouse_config["host"],
+            port=self.clickhouse_config["port"],
+            user=self.clickhouse_config["user"],
+            password=self.clickhouse_config["password"],
+            database=self.clickhouse_config["database"],
         )
 
     @staticmethod
     def insert_batch(clickhouse_client, topic, batch):
-        insert_fields = ', '.join(batch[0].keys())
-        insert_values = ', '.join([f"'{v}'" if isinstance(v, str) else str(v) for record in batch for v in record.values()])
+        insert_fields = ", ".join(batch[0].keys())
+        insert_values = ", ".join(
+            [
+                f"'{v}'" if isinstance(v, str) else str(v)
+                for record in batch
+                for v in record.values()
+            ]
+        )
         query = f"INSERT INTO {topic}_table ({insert_fields}) VALUES {insert_values}"
         clickhouse_client.execute(query)
         logger.info("Inserted %d records into %s_table", len(batch), topic)
 
-    @backoff()
+    @backoff.on_exception(
+        backoff.expo, Exception, max_time=settings.max_backoff_time_seconds
+    )
     def process_messages(self):
         clickhouse_client = self.initialize_clickhouse_client()
 
@@ -71,18 +85,18 @@ class KafkaToClickHouseProcessor:
 
 if __name__ == "__main__":
     kafka_config = {
-        'bootstrap.servers': settings.kafka_broker_url,
-        'group.id': settings.group_id,
-        'auto.offset.reset': 'earliest',
-        'enable.auto.commit': False
+        "bootstrap.servers": settings.kafka_broker_url,
+        "group.id": settings.group_id,
+        "auto.offset.reset": "earliest",
+        "enable.auto.commit": False,
     }
 
     clickhouse_config = {
-        'host': settings.ch_host,
-        'port': settings.ch_port,
-        'user': settings.ch_user,
-        'password': settings.ch_password,
-        'database': settings.ch_database
+        "host": settings.ch_host,
+        "port": settings.ch_port,
+        "user": settings.ch_user,
+        "password": settings.ch_password,
+        "database": settings.ch_database,
     }
 
     processor = KafkaToClickHouseProcessor(kafka_config, clickhouse_config)

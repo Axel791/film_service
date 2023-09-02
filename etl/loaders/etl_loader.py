@@ -1,17 +1,15 @@
-from schemas.film_work_to_es import FilmWorkES
-from schemas.person_to_es import PersonES
-from schemas.genres import Genre
-
 from typing import List
 
-from elasticsearch import helpers, Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 
-from utils.index import INDEX_SETTINGS
 from db.backoff import backoff
+from schemas.film_work_to_es import FilmWorkES
+from schemas.genres import Genre
+from schemas.person_to_es import PersonES
+from utils.index import INDEX_SETTINGS
 
 
 class ElasticsearchLoader:
-
     def __init__(self, es: Elasticsearch) -> None:
         self._es = es
 
@@ -20,8 +18,8 @@ class ElasticsearchLoader:
         if not self._es.indices.exists(index=index):
             self._es.indices.create(
                 index=index,
-                settings=INDEX_SETTINGS.get('settings'),
-                mappings=INDEX_SETTINGS.get(index).get('mappings')
+                settings=INDEX_SETTINGS.get("settings"),
+                mappings=INDEX_SETTINGS.get(index).get("mappings"),
             )
 
     def bulk_load_film_works(self, film_works: List[FilmWorkES]):
@@ -36,12 +34,12 @@ class ElasticsearchLoader:
                     "genre": film_work.genres,
                     "title": film_work.title,
                     "description": film_work.description,
-                    "director": ' '.join(film_work.director),
-                    "actors_names": ' '.join(film_work.actors_names),
-                    "writers_names": ' '.join(film_work.writers_names),
+                    "director": " ".join(film_work.director),
+                    "actors_names": " ".join(film_work.actors_names),
+                    "writers_names": " ".join(film_work.writers_names),
                     "actors": film_work.actors,
-                    "writers": film_work.writers
-                }
+                    "writers": film_work.writers,
+                },
             }
             actions.append(doc)
         helpers.bulk(self._es, actions)
@@ -55,8 +53,8 @@ class ElasticsearchLoader:
                 "_source": {
                     "id": str(person.id),
                     "full_name": person.full_name,
-                    "films": person.films
-                }
+                    "films": person.films,
+                },
             }
             actions.append(doc)
         helpers.bulk(self._es, actions)
@@ -70,8 +68,8 @@ class ElasticsearchLoader:
                 "_source": {
                     "id": str(genre.id),
                     "name": genre.name,
-                    "description": genre.description
-                }
+                    "description": genre.description,
+                },
             }
             actions.append(doc)
         helpers.bulk(self._es, actions)

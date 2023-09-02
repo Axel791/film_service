@@ -23,7 +23,7 @@ class RoleIn(RoleOut):
             Permissions.NOT_ALL,
             Permissions.SOME,
             Permissions.MEDIUM,
-            Permissions.ALL
+            Permissions.ALL,
         ]:
             raise ValueError(errors_const.NO_SUCH_ACCESS_STATUS)
         return v

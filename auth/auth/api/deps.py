@@ -1,16 +1,15 @@
 from functools import wraps
 from uuid import uuid4
 
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from auth.core.containers import Container
-from auth.db.session import scope
-from auth.core.config import settings
-
 from loguru import logger
 
+from auth.core.config import settings
+from auth.core.containers import Container
+from auth.db.session import scope
 from auth.models.roles import Permissions
 from auth.utils import errors_const
 
@@ -22,7 +21,7 @@ SECRET_KEY = settings.JWT_REFRESH_SECRET_KEY
 @inject
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    rep_user=Depends(Provide[Container.repository_user])
+    rep_user=Depends(Provide[Container.repository_user]),
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,48 +47,36 @@ async def get_current_user(
 
 @inject
 async def filter_user_superuser(
-        user=Depends(get_current_user),
-        rep_user=Depends(Provide[Container.repository_user])
+    user=Depends(get_current_user), rep_user=Depends(Provide[Container.repository_user])
 ):
     user = rep_user.get(id=user.id)
     if user.role.permission_class == Permissions.ALL:
         return user
-    raise HTTPException(
-        status_code=400,
-        detail=errors_const.PERMISSION_ERROR
-    )
+    raise HTTPException(status_code=400, detail=errors_const.PERMISSION_ERROR)
 
 
 @inject
 async def filter_user_moderator(
-        user=Depends(get_current_user),
-        rep_user=Depends(Provide[Container.repository_user])
+    user=Depends(get_current_user), rep_user=Depends(Provide[Container.repository_user])
 ):
     user = rep_user.get(id=user.id)
     if user.role.permission_class in [Permissions.MEDIUM, Permissions.ALL]:
         return user
-    raise HTTPException(
-        status_code=400,
-        detail=errors_const.PERMISSION_ERROR
-    )
+    raise HTTPException(status_code=400, detail=errors_const.PERMISSION_ERROR)
 
 
 @inject
 async def filter_user_subs(
-        user=Depends(get_current_user),
-        rep_user=Depends(Provide[Container.repository_user])
+    user=Depends(get_current_user), rep_user=Depends(Provide[Container.repository_user])
 ):
     user = rep_user.get(id=user.id)
     if user.role.permission_class in [
         Permissions.MEDIUM,
         Permissions.SOME,
-        Permissions.ALL
+        Permissions.ALL,
     ]:
         return user
-    raise HTTPException(
-        status_code=400,
-        detail=errors_const.PERMISSION_ERROR
-    )
+    raise HTTPException(status_code=400, detail=errors_const.PERMISSION_ERROR)
 
 
 @inject
@@ -101,7 +88,6 @@ async def create_session():
 
 @inject
 def commit_and_close_session(func):
-
     @wraps(func)
     @inject
     async def wrapper(db=Depends(Provide[Container.db]), *args, **kwargs):

@@ -1,7 +1,8 @@
 import psycopg2
 
-from .backoff import backoff
 from core.config import settings
+
+from .backoff import backoff
 
 
 @backoff()

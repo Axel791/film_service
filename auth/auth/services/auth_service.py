@@ -1,6 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List
 
+from fastapi import Depends, HTTPException, status
+from jose import jwt
+from loguru import logger
+from passlib.context import CryptContext
+from redis.asyncio import Redis
+from utils.check_jwt_token import check_token
+
 from auth.core.config import settings
 from auth.repository.login_event import RepositoryLoginEvent
 from auth.repository.user import RepositoryUser
@@ -9,14 +16,6 @@ from auth.schemas.login_event import LoginEvent
 from auth.schemas.token import Token
 from auth.schemas.user import RegUserIn
 from auth.utils.check_jwt_token import CheckToken
-
-from fastapi import Depends, HTTPException, status
-from jose import jwt
-from loguru import logger
-from passlib.context import CryptContext
-from redis.asyncio import Redis
-
-from utils.check_jwt_token import check_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -29,11 +28,11 @@ class AuthService:
     ACCESS_TOKEN_EXPIRE = settings.access_token_expire
 
     def __init__(
-            self,
-            repository_user: RepositoryUser,
-            repository_login_event: RepositoryLoginEvent,
-            repository_user_provider: UserProvider,
-            redis: Redis,
+        self,
+        repository_user: RepositoryUser,
+        repository_login_event: RepositoryLoginEvent,
+        repository_user_provider: UserProvider,
+        redis: Redis,
     ):
         self._repository_user = repository_user
         self._repository_login_event = repository_login_event
@@ -82,7 +81,7 @@ class AuthService:
             "token": refresh_token,
             "login": user.login,
             "email": user.email,
-            "password": hashed_password
+            "password": hashed_password,
         }
         logger.info(obj_in)
 
@@ -99,7 +98,7 @@ class AuthService:
             logger.warning(f"User with email {form_data.user_email} not found.")
             raise credentials_exception
         if not self.verify_password(
-                input_password=form_data.password, hashed_password=user.password
+            input_password=form_data.password, hashed_password=user.password
         ):
             logger.warning(f"Invalid password for user {user.login}.")
             self._send_login_event(user.id, False)
@@ -123,7 +122,7 @@ class AuthService:
                 "user_id_role": user.user_role_id,
                 "created_at": user.created_at,
                 "token": user.token,
-            }
+            },
         }
 
     async def refresh_access_token(self, access_token: Token) -> Token:
@@ -167,14 +166,16 @@ class AuthService:
         return Token(token=new_access_token)
 
     async def check_authorisation(self, token: str) -> CheckToken:
-        token_data: CheckToken = check_token(secret=settings.jwt_secret_key, token=token)
+        token_data: CheckToken = check_token(
+            secret=settings.jwt_secret_key, token=token
+        )
         return token_data
 
     async def get_login_history(
-            self,
-            user_login: str,
-            page: int | None = 1,
-            page_size: int | None = settings.default_page_size,
+        self,
+        user_login: str,
+        page: int | None = 1,
+        page_size: int | None = settings.default_page_size,
     ) -> List[LoginEvent]:
         user = self._repository_user.get(login=user_login)
         login_history = self._repository_login_event.list(

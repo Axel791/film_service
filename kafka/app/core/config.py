@@ -12,9 +12,11 @@ class Settings(BaseSettings):
     jwt_secret_key: str
     algorithm: str
 
+    sentry_dsn: str
+
     class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
 settings = Settings()

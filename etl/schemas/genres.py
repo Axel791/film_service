@@ -1,7 +1,8 @@
 from datetime import datetime
-from uuid import UUID
 from typing import Optional
-from schemas.mixins import UUIDMixin, TimeStampedMixin
+from uuid import UUID
+
+from schemas.mixins import TimeStampedMixin, UUIDMixin
 
 
 class Genre(UUIDMixin, TimeStampedMixin):

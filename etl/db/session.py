@@ -1,7 +1,7 @@
 import logging
+from contextlib import contextmanager
 
 from psycopg2.extras import DictCursor
-from contextlib import contextmanager
 
 
 @contextmanager

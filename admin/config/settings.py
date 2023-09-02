@@ -10,46 +10,36 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-sncde)$(mu1j($wy%w4p^1%#0qspl@eah1f3g7-orz&i^b2)&m'
+SECRET_KEY = "django-insecure-sncde)$(mu1j($wy%w4p^1%#0qspl@eah1f3g7-orz&i^b2)&m"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:81']
+CSRF_TRUSTED_ORIGINS = ["http://localhost:81"]
 CSRF_COOKIE_DOMAIN = ".localhost"
 
 # Application definition
-include(
-    'components/app_settings.py'
-)
+include("components/app_settings.py")
 
 # Database
 include(
-    'components/database.py',
+    "components/database.py",
 )
 
 # Password validation
-include(
-    'components/auth.py'
-)
+include("components/auth.py")
 
 # Internationalization
-include(
-    'components/internationalization.py'
-)
+include("components/internationalization.py")
 
 # Static files (CSS, JavaScript, Images)
-include(
-    'components/statick.py'
-)
+include("components/statick.py")
 
 # logging
 
-include(
-    'components/logging.py'
-)
+include("components/logging.py")
 
 # Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -1,29 +1,10 @@
 services:
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"
-      - "6831:6831/udp"
-
-  nginx:
-    build: ./nginx
-    container_name: ${PROJECT_SLUG}_nginx
-    volumes:
-      - static_dir:/opt/admin/static/
-      - media_dir:/opt/admin/media/
-    ports:
-      - "80:80"
-      - "81:81"
-      - "82:82"
-      - "83:83"
-    depends_on:
-      - admin
-      - auth
-      - api
-      - kafka
-    networks:
-      - internal
+#  jaeger:
+#    image: jaegertracing/all-in-one:latest
+#    ports:
+#      - "16686:16686"
+#      - "6831:6831/udp"
 
   db:
     image: postgres:latest
@@ -37,6 +18,135 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+    networks:
+      - internal
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      internal:
+        aliases:
+          - elasticsearch
+
+  redis:
+    image: redis:6.2.6
+    networks:
+      - internal
+
+  elasticsearch_logging:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_logging_data:/usr/share/elasticsearch_logging/data
+    networks:
+      internal:
+        aliases:
+          - elasticsearch_logging
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch_logging
+    networks:
+      - internal
+
+  logstash:
+    image: logstash:7.10.1
+    environment:
+      XPACK_MONITORING_ENABLED: "false"
+      ETL_HOST: "elasticsearch_logging:9200"
+    ports:
+      - "5044:5044/udp"
+      - "5045:5045/udp"
+      - "5046:5046/udp"
+      - "5047:5047/udp"
+      - "5048:5048/udp"
+      - "5049:5049/udp"
+      - "5050:5050/udp"
+    volumes:
+      - ./logging_service/deploy/:/config/:ro
+      - /tmp/logs/nginx/:/var/log/nginx/:ro
+      - /tmp/logs/app:/var/log/app:ro
+      - /tmp/logs/api:/var/log/api:ro
+      - /tmp/logs/auth:/var/log/auth:ro
+      - /tmp/logs/kafka:/var/log/kafka:ro
+      - /tmp/logs/kafka-ch-etl:/var/log/kafka-ch-etl:ro
+    command: logstash -f /config/logstash.conf
+    networks:
+      - internal
+
+  nginx:
+    build: ./nginx
+    container_name: ${PROJECT_SLUG}_nginx
+    volumes:
+      - static_dir:/opt/admin/static/
+      - media_dir:/opt/admin/media/
+      - /tmp/logs/nginx/:/var/log/nginx/
+    ports:
+      - "80:80"
+      - "81:81"
+      - "82:82"
+      - "83:83"
+    depends_on:
+      - admin
+      - auth
+      - api
+      - kafka
+    networks:
+      - internal
+
+  filebeat_nginx:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    volumes:
+      - /tmp/logs/nginx:/var/log/nginx:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat.yaml:ro
+    depends_on:
+      - nginx
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
+    networks:
+      - internal
+
+  app:
+    container_name: ${PROJECT_SLUG}_etl
+    build:
+      context: ./etl
+      dockerfile: etl.dockerfile
+    depends_on:
+      - db
+      - elasticsearch
+    volumes:
+      - ./etl:/opt/etl:rw
+    env_file:
+      - .env
+    networks:
+      - internal
+
+  filebeat_app:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    volumes:
+      - /tmp/logs/app:/var/log/app:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat/filebeat.yaml:ro
+    depends_on:
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
     networks:
       - internal
 
@@ -57,6 +167,21 @@ services:
     networks:
       - internal
 
+  filebeat_admin:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    volumes:
+      - /tmp/logs/admin:/var/log/admin:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat/filebeat.yaml:ro
+    depends_on:
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
+    networks:
+      - internal
+
   api:
     container_name: ${PROJECT_SLUG}_api
     build:
@@ -69,6 +194,21 @@ services:
     volumes:
       - ./app:/opt/app:rw
     restart: always
+    networks:
+      - internal
+
+  filebeat_api:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    volumes:
+      - /tmp/logs/api:/var/log/api:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat/filebeat.yaml:ro
+    depends_on:
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
     networks:
       - internal
 
@@ -87,6 +227,21 @@ services:
     networks:
       - internal
 
+  filebeat_auth:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    volumes:
+      - /tmp/logs/auth:/var/log/auth:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat/filebeat.yaml:ro
+    depends_on:
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
+    networks:
+      - internal
+
   kafka:
     container_name: ${PROJECT_SLUG}_kafka_api
     build:
@@ -99,6 +254,21 @@ services:
     volumes:
       - ./kafka:/opt/kafka:rw
     restart: always
+    networks:
+      - internal
+
+  filebeat_kafka:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    volumes:
+      - /tmp/logs/kafka:/var/log/kafka:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat/filebeat.yaml:ro
+    depends_on:
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
     networks:
       - internal
 
@@ -115,35 +285,18 @@ services:
     networks:
       - internal
 
-  redis:
-    image: redis:6.2.6
-    networks:
-      - internal
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
-    environment:
-      - "discovery.type=single-node"
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  filebeat_kafka_ch_etl:
+    image: docker.elastic.co/beats/filebeat:7.3.2
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      internal:
-        aliases:
-          - elasticsearch
-
-  app:
-    container_name: ${PROJECT_SLUG}_etl
-    build:
-      context: ./etl
-      dockerfile: etl.dockerfile
+      - /tmp/logs/kafka_ch_etl:/var/log/kafka_ch_etl:ro
+      - ./logging_service/deploy/filebeat.yaml:/usr/share/filebeat/filebeat.yaml:ro
     depends_on:
-      - db
-      - elasticsearch
-    volumes:
-      - ./etl:/opt/etl:rw
-    env_file:
-      - .env
+      - logstash
+      - elasticsearch_logging
+      - kibana
+    entrypoint: bash -c 'export PATH=$PATH:/usr/share/filebeat && /usr/local/bin/docker-entrypoint -e'
+    links:
+      - logstash
     networks:
       - internal
 
@@ -283,7 +436,7 @@ volumes:
   media_dir:
   pgdata:
   elasticsearch_data:
-
+  elasticsearch_logging_data:
 
 networks:
   internal:

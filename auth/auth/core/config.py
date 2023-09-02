@@ -1,6 +1,6 @@
-from pydantic import PostgresDsn, BaseSettings, validator
-
 from typing import Any, Dict
+
+from pydantic import BaseSettings, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
@@ -41,6 +41,8 @@ class Settings(BaseSettings):
 
     requests_limit_per_min: int = 20
 
+    sentry_dsn: str
+
     @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
@@ -68,8 +70,8 @@ class Settings(BaseSettings):
         )
 
     class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
 settings = Settings()
