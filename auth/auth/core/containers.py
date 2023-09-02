@@ -18,14 +18,15 @@ from auth.services.role_service import RoleService
 class Container(containers.DeclarativeContainer):
     config = providers.Singleton(Settings)
 
-    db = providers.Singleton(SyncSession, db_url=config.provided.SYNC_SQLALCHEMY_DATABASE_URI)
-
-    redis = providers.Resource(
-        init_redis.init_redis_pool,
-        host=config.provided.REDIS_HOST
+    db = providers.Singleton(
+        SyncSession, db_url=config.provided.SYNC_SQLALCHEMY_DATABASE_URI
     )
 
-    repository_user = providers.Singleton(RepositoryUser,  model=User, session=db)
+    redis = providers.Resource(
+        init_redis.init_redis_pool, host=config.provided.REDIS_HOST
+    )
+
+    repository_user = providers.Singleton(RepositoryUser, model=User, session=db)
     repository_role = providers.Singleton(RepositoryRole, model=Role, session=db)
 
     role_service = providers.Singleton(
@@ -39,5 +40,3 @@ class Container(containers.DeclarativeContainer):
         repository_user=repository_user,
         redis=redis,
     )
-
-

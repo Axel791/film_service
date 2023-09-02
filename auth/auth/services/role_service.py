@@ -10,11 +10,10 @@ from auth.utils import errors_const, const
 
 
 class RoleService:
-
     def __init__(
-            self,
-            repository_role: RepositoryRole,
-            repository_user: RepositoryUser,
+        self,
+        repository_role: RepositoryRole,
+        repository_user: RepositoryUser,
     ):
         self._repository_role = repository_role
         self._repository_user = repository_user
@@ -56,19 +55,15 @@ class RoleService:
             obj_in={
                 "role_name": role_item.role_name,
                 "description": role_item.description,
-                "permission_class": role_item.permission_class
-            }
+                "permission_class": role_item.permission_class,
+            },
         )
 
     async def add_role_to_user(self, user_id: str, role_id: str):
         role = await self._get_role(role_id)
         user = await self._get_user(user_id)
         return await self._repository_user.update(
-            db_obj=user,
-            obj_in={
-                "user_role_id": role.id,
-                "role": role
-            }
+            db_obj=user, obj_in={"user_role_id": role.id, "role": role}
         )
 
     async def create(self, role_item: RoleIn) -> RoleOut:
@@ -76,8 +71,7 @@ class RoleService:
             obj_in={
                 "role_name": role_item.role_name,
                 "description": role_item.description,
-                "permission_class": role_item.permission_class
+                "permission_class": role_item.permission_class,
             }
         )
         return RoleOut.parse_obj(role)
-

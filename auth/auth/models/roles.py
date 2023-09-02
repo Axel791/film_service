@@ -11,6 +11,7 @@ class Permissions(enum.Enum):
     """
     Степени доступа и разрешения в приложении.
     """
+
     ALL = 1
     MEDIUM = 2
     SOME = 3
@@ -18,21 +19,18 @@ class Permissions(enum.Enum):
 
 
 class Role(Base):
-    __tablename__ = 'role'
+    __tablename__ = "role"
 
     id = Column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         unique=True,
-        nullable=False
+        nullable=False,
     )
     role_name = Column(String(255), unique=True, nullable=False)
     description = Column(String(255), nullable=True)
-    permission_class = Column(
-        Enum(Permissions),
-        default=Permissions.NOT_ALL
-    )
+    permission_class = Column(Enum(Permissions), default=Permissions.NOT_ALL)
 
     def __str__(self):
         return self.role_name

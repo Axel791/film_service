@@ -7,7 +7,10 @@ from auth.core.config import settings
 from auth.core.containers import Container
 
 from auth.utils.jaeger_tracer import configure_jaeger_tracer
-from auth.middlewares.request_id_middleware import RequestIdMiddleware, RateLimitMiddleware
+from auth.middlewares.request_id_middleware import (
+    RequestIdMiddleware,
+    RateLimitMiddleware,
+)
 
 from auth.db import init_redis
 
@@ -22,12 +25,17 @@ if settings.enable_tracer:
 
 def create_app():
     container = Container()
-    container.wire(modules=[deps, auth, ])
+    container.wire(
+        modules=[
+            deps,
+            auth,
+        ]
+    )
 
     fastapi_app = FastAPI(
-        root_path='/auth',
+        root_path="/auth",
         title=settings.PROJECT_SLUG,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json"
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
     )
     fastapi_app.add_middleware(
         CORSMiddleware,
@@ -50,11 +58,11 @@ app = create_app()
 FastAPIInstrumentor.instrument_app(app)
 
 
-@app.on_event('startup')
+@app.on_event("startup")
 async def startup():
     init_redis.redis_for_rate_limiter = Redis(
         host=settings.REDIS_HOST,
         port=settings.REDIS_PORT,
         db=settings.REDIS_DB_FOR_RATE_LIMITER,
-        decode_responses=True
+        decode_responses=True,
     )

@@ -8,7 +8,7 @@ from auth.core.config import settings
 
 
 def configure_jaeger_tracer() -> None:
-    resource = Resource.create({'service.name': 'auth-service'})
+    resource = Resource.create({"service.name": "auth-service"})
     trace.set_tracer_provider(TracerProvider(resource=resource))
     trace.get_tracer_provider().add_span_processor(
         BatchSpanProcessor(
@@ -18,4 +18,6 @@ def configure_jaeger_tracer() -> None:
             )
         )
     )
-    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(ConsoleSpanExporter())
+    )

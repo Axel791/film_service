@@ -15,7 +15,7 @@ async def init_redis_pool(host: str) -> AsyncIterator[Redis]:
         pool = await from_url(
             url="redis://{host}".format(host=host),
             encoding="utf-8",
-            decode_responses=True
+            decode_responses=True,
         )
         logger.info("Connected to Redis at host: %s", host)
         yield pool

@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from contextvars import ContextVar
 from loguru import logger
 
-scope: ContextVar = ContextVar('db_session_scope')
+scope: ContextVar = ContextVar("db_session_scope")
 
 
 def scopefunc():
@@ -16,13 +16,16 @@ def scopefunc():
 
 # for fastapi
 class SyncSession:
-
     def __init__(self, db_url: str, dispose_session: bool = False):
         self.db_url = db_url
         self.dispose_session = dispose_session
         self.sync_engine = create_engine(self.db_url, pool_pre_ping=True)
-        self.sync_session_factory = sessionmaker(bind=self.sync_engine, autoflush=False, expire_on_commit=False)
-        self.scoped_session = scoped_session(self.sync_session_factory, scopefunc=scopefunc)
+        self.sync_session_factory = sessionmaker(
+            bind=self.sync_engine, autoflush=False, expire_on_commit=False
+        )
+        self.scoped_session = scoped_session(
+            self.sync_session_factory, scopefunc=scopefunc
+        )
         self.session = self.scoped_session()
         logger.info("SyncSession initialized with DB URL: %s", self.db_url)
 
@@ -36,7 +39,9 @@ class SyncSession:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if not self.dispose_session:
-            logger.warning("Session not disposed explicitly. Please make sure to call `.dispose()` when done.")
+            logger.warning(
+                "Session not disposed explicitly. Please make sure to call `.dispose()` when done."
+            )
         self.session.remove()
         logger.debug("SyncSession exited and session removed")
 
