@@ -41,6 +41,8 @@ class Settings(BaseSettings):
 
     requests_limit_per_min: int = 20
 
+    sentry_dsn: str
+
     @validator("ASYNC_SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_async_db_connection(cls, v: str | None, values: Dict[str, Any]) -> Any:
         if isinstance(v, str):

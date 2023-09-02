@@ -22,6 +22,15 @@ from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 if settings.enable_tracer:
     configure_jaeger_tracer()
 
+import sentry_sdk
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+
+
+sentry_sdk.init(
+    dsn=settings.sentry_dsn,
+    integrations=[SentryAsgiMiddleware],
+)
+
 
 def create_app():
     container = Container()
@@ -55,6 +64,7 @@ def create_app():
 
 
 app = create_app()
+app.add_middleware(SentryAsgiMiddleware)
 FastAPIInstrumentor.instrument_app(app)
 
 
