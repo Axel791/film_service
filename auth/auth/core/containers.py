@@ -1,16 +1,12 @@
 from dependency_injector import containers, providers
 
-
 from auth.core.config import Settings
-from auth.db.session import SyncSession
 from auth.db import init_redis
-
+from auth.db.session import SyncSession
 from auth.models.entity import User
 from auth.models.roles import Role
-
-from auth.repository.user import RepositoryUser
 from auth.repository.role import RepositoryRole
-
+from auth.repository.user import RepositoryUser
 from auth.services.auth_service import AuthService
 from auth.services.role_service import RoleService
 

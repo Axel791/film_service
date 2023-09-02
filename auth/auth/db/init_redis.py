@@ -1,5 +1,6 @@
-from aioredis import Redis, from_url
 from typing import AsyncIterator
+
+from aioredis import Redis, from_url
 from loguru import logger
 
 redis_for_rate_limiter: Redis | None = None

@@ -1,5 +1,6 @@
 from typing import Optional
-from schemas.mixins import UUIDMixin, TimeStampedMixin
+
+from schemas.mixins import TimeStampedMixin, UUIDMixin
 
 
 class PersonFilmWork(UUIDMixin, TimeStampedMixin):

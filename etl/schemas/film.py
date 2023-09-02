@@ -1,8 +1,8 @@
 import enum
-
-from typing import Optional
-from schemas.mixins import TimeStampedMixin, UUIDMixin
 from datetime import datetime
+from typing import Optional
+
+from schemas.mixins import TimeStampedMixin, UUIDMixin
 
 
 class FilmType(enum.Enum):

@@ -1,16 +1,15 @@
 from functools import wraps
 from uuid import uuid4
 
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from auth.core.containers import Container
-from auth.db.session import scope
-from auth.core.config import settings
-
 from loguru import logger
 
+from auth.core.config import settings
+from auth.core.containers import Container
+from auth.db.session import scope
 from auth.models.roles import Permissions
 from auth.utils import errors_const
 

@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from auth.api.v1.endpoints import auth, role
 
 api_router = APIRouter()

@@ -1,6 +1,6 @@
-from schemas.mixins import UUIDMixin
+from typing import List, Optional
 
-from typing import Optional, List
+from schemas.mixins import UUIDMixin
 
 
 class FilmWorkES(UUIDMixin):
@@ -16,4 +16,3 @@ class FilmWorkES(UUIDMixin):
     writers_names: Optional[List[str]] = []
     actors: Optional[List[dict]] = []
     writers: Optional[List[dict]] = []
-

@@ -15,6 +15,47 @@ filebeat.inputs:
     keys_under_root: true
     add_error_key: true
 
+- type: log
+  enabled: true
+  paths:
+    - /var/log/admin/*
+  json:
+    keys_under_root: true
+    add_error_key: true
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/api/*
+  json:
+    keys_under_root: true
+    add_error_key: true
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/auth/*
+  json:
+    keys_under_root: true
+    add_error_key: true
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/kafka/*
+  json:
+    keys_under_root: true
+    add_error_key: true
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/kafka-ch-etl/*
+  json:
+    keys_under_root: true
+    add_error_key: true
+
+
 output.logstash:
   enabled: true
-  hosts: ["logstash:5044", "logstash:5045"]
+  hosts: ["logstash:5044", "logstash:5045", "logstash:5046", "logstash:5047", "logstash:5048", "logstash:5049", "logstash:5050"]

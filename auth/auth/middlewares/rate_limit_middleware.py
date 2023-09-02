@@ -1,9 +1,9 @@
 from fastapi import Request
-from starlette.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
-from auth.db import init_redis
 from auth.core.config import settings
+from auth.db import init_redis
 from auth.utils.check_jwt_token import check_token
 from auth.utils.rate_limiter import RateLimiter
 

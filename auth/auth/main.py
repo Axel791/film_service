@@ -1,23 +1,17 @@
 from aioredis import Redis
-from auth.api.v1 import api
-from auth.api import deps
-from auth.api.v1.endpoints import auth
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
+from auth.api import deps
+from auth.api.v1 import api
+from auth.api.v1.endpoints import auth
 from auth.core.config import settings
 from auth.core.containers import Container
-
-from auth.utils.jaeger_tracer import configure_jaeger_tracer
-from auth.middlewares.request_id_middleware import (
-    RequestIdMiddleware,
-    RateLimitMiddleware,
-)
-
 from auth.db import init_redis
-
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
-
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from auth.middlewares.request_id_middleware import (RateLimitMiddleware,
+                                                    RequestIdMiddleware)
+from auth.utils.jaeger_tracer import configure_jaeger_tracer
 
 if settings.enable_tracer:
     configure_jaeger_tracer()
@@ -25,11 +19,7 @@ if settings.enable_tracer:
 import sentry_sdk
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 
-
-sentry_sdk.init(
-    dsn=settings.sentry_dsn,
-    integrations=[SentryAsgiMiddleware],
-)
+sentry_sdk.init(dsn=settings.sentry_dsn, integrations=[SentryAsgiMiddleware])
 
 
 def create_app():
@@ -48,6 +38,7 @@ def create_app():
     )
     fastapi_app.add_middleware(
         CORSMiddleware,
+        SentryAsgiMiddleware,
         allow_origins=["*"],  # Allows all origins
         allow_credentials=True,
         allow_methods=["*"],  # Allows all methods
@@ -64,7 +55,7 @@ def create_app():
 
 
 app = create_app()
-app.add_middleware(SentryAsgiMiddleware)
+
 FastAPIInstrumentor.instrument_app(app)
 
 

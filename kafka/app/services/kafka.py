@@ -1,12 +1,12 @@
 import asyncio
-from typing import Dict
-from functools import lru_cache
 import json
+from functools import lru_cache
+from typing import Dict
 
 from aiokafka import AIOKafkaProducer
 
-from app.core.config import settings
 from app.api.v1.schemas.message import Message
+from app.core.config import settings
 
 
 class KafkaService:

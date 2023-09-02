@@ -1,7 +1,9 @@
 import json
 import logging
+
 from confluent_kafka.admin import AdminClient, NewTopic
 from schema_registry.client import SchemaRegistryClient
+
 from app.core.config import settings
 
 kafka_broker = settings.kafka_broker_url

@@ -1,6 +1,7 @@
 from fastapi import Request, status
 from fastapi.responses import ORJSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.base import (BaseHTTPMiddleware,
+                                       RequestResponseEndpoint)
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):

@@ -1,24 +1,18 @@
+from typing import List
+
 from pydantic import UUID4
 
-from typing import List
 from schemas.film_work_to_es import FilmWorkES
-from schemas.person_to_es import PersonES
 from schemas.genres import Genre
-from schemas.persons import Person
 from schemas.person_filmworks import PersonFilmWork
-
-from utils.query import (
-    FILM_WORK_QUERY_ALL,
-    GENRE_QUERY,
-    PERSON_QUERY,
-    PERSON_QUERY_ALL,
-    PERSON_FILM_WORK_QUERY,
-    GENRE_QUERY_ALL
-)
+from schemas.person_to_es import PersonES
+from schemas.persons import Person
+from utils.query import (FILM_WORK_QUERY_ALL, GENRE_QUERY, GENRE_QUERY_ALL,
+                         PERSON_FILM_WORK_QUERY, PERSON_QUERY,
+                         PERSON_QUERY_ALL)
 
 
 class PostgresLoader:
-
     def __init__(self, cursor) -> None:
         self._cursor = cursor
 
@@ -75,10 +69,7 @@ class PostgresLoader:
 
         persons = []
         for row in rows:
-            person = PersonES(
-                id=row[0],
-                full_name=row[1]
-            )
+            person = PersonES(id=row[0], full_name=row[1])
             persons.append(person)
 
         return persons
@@ -88,11 +79,7 @@ class PostgresLoader:
         rows = self._cursor.fetchall()
         film_works = []
         for row in rows:
-            film_work = PersonFilmWork(
-                id=row[0],
-                title=row[1],
-                role=row[2]
-            )
+            film_work = PersonFilmWork(id=row[0], title=row[1], role=row[2])
             film_works.append(film_work)
 
         return film_works
@@ -103,11 +90,7 @@ class PostgresLoader:
 
         genres = []
         for row in rows:
-            genre = Genre(
-                id=row[0],
-                name=row[1],
-                description=row[2]
-            )
+            genre = Genre(id=row[0], name=row[1], description=row[2])
             genres.append(genre)
 
         return genres

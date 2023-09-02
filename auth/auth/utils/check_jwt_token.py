@@ -1,4 +1,4 @@
-from jose import jwt, exceptions
+from jose import exceptions, jwt
 from pydantic import BaseModel
 
 from auth.core.config import settings

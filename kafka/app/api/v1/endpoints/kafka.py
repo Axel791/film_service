@@ -1,17 +1,17 @@
 import sys
+
 from fastapi import APIRouter, Depends
-
-from app.services.kafka import get_kafka_service, KafkaService
-from app.api.v1.schemas.message import Message
-from app.auth.auth_bearer import security_jwt
-
 from loguru import logger
 from starlette.requests import Request
+
+from app.api.v1.schemas.message import Message
+from app.auth.auth_bearer import security_jwt
+from app.services.kafka import KafkaService, get_kafka_service
 
 router = APIRouter()
 
 logger.add(
-    "/var/log/auth/access-log.json",
+    "/var/log/kafka/access-log.json",
     rotation="500 MB",
     retention="7 days",
     format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",

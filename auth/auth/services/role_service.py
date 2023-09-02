@@ -1,12 +1,12 @@
-from loguru import logger
-
 from typing import List
 
+from loguru import logger
+
+from auth.models import Role
 from auth.repository.role import RepositoryRole
 from auth.repository.user import RepositoryUser
-from auth.schemas.role import RoleOut, RoleIn
-from auth.models import Role
-from auth.utils import errors_const, const
+from auth.schemas.role import RoleIn, RoleOut
+from auth.utils import const, errors_const
 
 
 class RoleService:

@@ -58,7 +58,7 @@ def test_insert(db_name, connection, data):
 def test_select(db_name, connection, data):
     """Функция для тестирования чтения данных с фильтрацией по user_id"""
     print(f"Тестируем фильтрацию: {db_name}...")
-    user_id = data[0][0] # Просто берем первый user_id из данных
+    user_id = data[0][0]  # Просто берем первый user_id из данных
     select_sql = f"SELECT * FROM views WHERE user_id = '{user_id}'"
     select_time, _ = measure_time(connection.execute, select_sql)
     print(f"{db_name} - Результаты теста для {user_id}: {select_time} секунд")
@@ -70,20 +70,20 @@ if __name__ == "__main__":
 
     # Тестирование Vertica
     vertica_connection = vertica_connect(
-        host='localhost',
+        host="localhost",
         port=5433,
-        user='your_user',
-        password='your_password',
-        database='your_database'
+        user="your_user",
+        password="your_password",
+        database="your_database",
     )
-    create_table('Vertica', vertica_connection)
-    test_insert('Vertica', vertica_connection, data)
-    test_select('Vertica', vertica_connection, data)
+    create_table("Vertica", vertica_connection)
+    test_insert("Vertica", vertica_connection, data)
+    test_select("Vertica", vertica_connection, data)
     vertica_connection.close()
 
     # Тестирование ClickHouse
-    clickhouse_client = Client('localhost')
-    create_table('ClickHouse', clickhouse_client)
-    test_insert('ClickHouse', clickhouse_client, data)
-    test_select('ClickHouse', clickhouse_client, data)
+    clickhouse_client = Client("localhost")
+    create_table("ClickHouse", clickhouse_client)
+    test_insert("ClickHouse", clickhouse_client, data)
+    test_select("ClickHouse", clickhouse_client, data)
     clickhouse_client.disconnect()

@@ -1,6 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List
 
+from fastapi import Depends, HTTPException, status
+from jose import jwt
+from loguru import logger
+from passlib.context import CryptContext
+from redis.asyncio import Redis
+from utils.check_jwt_token import check_token
+
 from auth.core.config import settings
 from auth.repository.login_event import RepositoryLoginEvent
 from auth.repository.user import RepositoryUser
@@ -9,14 +16,6 @@ from auth.schemas.login_event import LoginEvent
 from auth.schemas.token import Token
 from auth.schemas.user import RegUserIn
 from auth.utils.check_jwt_token import CheckToken
-
-from fastapi import Depends, HTTPException, status
-from jose import jwt
-from loguru import logger
-from passlib.context import CryptContext
-from redis.asyncio import Redis
-
-from utils.check_jwt_token import check_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

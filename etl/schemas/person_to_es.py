@@ -1,9 +1,8 @@
-from schemas.mixins import UUIDMixin
+from typing import List, Optional
 
-from typing import Optional, List
+from schemas.mixins import UUIDMixin
 
 
 class PersonES(UUIDMixin):
     full_name: str
     films: Optional[List[dict]] = []
-

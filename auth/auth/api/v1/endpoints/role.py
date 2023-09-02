@@ -1,17 +1,16 @@
 import sys
 from typing import List
 
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 from loguru import logger
 from starlette.requests import Request
 
-from dependency_injector.wiring import inject, Provide
-
-from auth.api.deps import commit_and_close_session
+from auth.api.deps import (commit_and_close_session, filter_user_moderator,
+                           filter_user_superuser)
 from auth.core.containers import Container
+from auth.schemas.role import RoleId, RoleIn, RoleOut
 from auth.services.role_service import RoleService
-from auth.schemas.role import RoleOut, RoleIn, RoleId
-from auth.api.deps import filter_user_superuser, filter_user_moderator
 
 logger.add(
     "/var/log/auth/access-log.json",

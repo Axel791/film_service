@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 
 class BaseStorage(abc.ABC):
-
     @abc.abstractmethod
     def save_state(self, state: Dict[str, Any]) -> None:
         """Сохранить состояние в хранилище."""
@@ -15,7 +14,6 @@ class BaseStorage(abc.ABC):
 
 
 class JsonFileStorage(BaseStorage):
-
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path
 
@@ -32,7 +30,6 @@ class JsonFileStorage(BaseStorage):
 
 
 class State:
-
     def __init__(self, storage: BaseStorage) -> None:
         self.storage = storage
         self._state = self.storage.retrieve_state()

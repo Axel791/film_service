@@ -18,10 +18,11 @@ class Settings(BaseSettings):
 
     default_page_size: int = 10
 
+    sentry_dsn: str
+
     class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
 settings = Settings()
-

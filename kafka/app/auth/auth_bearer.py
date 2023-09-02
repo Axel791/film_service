@@ -2,11 +2,10 @@ import http
 import time
 from typing import Optional
 
-from jose import jwt
+from core.settings import settings
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
-from core.settings import settings
+from jose import jwt
 
 
 def decode_token(token: str) -> Optional[dict]:
