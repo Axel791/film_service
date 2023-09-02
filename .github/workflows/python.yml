@@ -1,0 +1,59 @@
+name: Python application
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 wemake-python-styleguide
+          pip install flake8-html-report
+          pip install requests
+
+      - name: Type check with mypy
+        run: mypy .
+        continue-on-error: true
+
+      - name: Lint with wemake-python-styleguide and generate HTML report for Python ${{ matrix.python-version }}
+        run: |
+          mkdir -p reports
+          flake8 . --output-file=reports/flake8_${{ matrix.python-version }}.txt
+          flake8-html-report --file reports/flake8_${{ matrix.python-version }}.txt --output reports/flake8-report_${{ matrix.python-version }}.html
+        continue-on-error: true
+
+      - name: Upload HTML report for Python ${{ matrix.python-version }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: flake8-report-${{ matrix.python-version }}
+          path: reports/flake8-report_${{ matrix.python-version }}.html
+
+      - name: Send Telegram message on success
+        if: success()
+        run: |
+          TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN
+          TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID
+          MESSAGE="The CI build was successful! 🎉"
+          
+          URL="https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage"
+          PAYLOAD="chat_id=$TELEGRAM_CHAT_ID&text=$MESSAGE"
+          
+          curl -s -X POST $URL -d $PAYLOAD
